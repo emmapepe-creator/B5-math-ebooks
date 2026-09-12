@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B5 1-3 相似形 — 雙模式教學互動電子書</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f0f7fc;
+      font-family: "Times New Roman", "標楷體", "DFKai-SB", "BiauKai", serif;
+      font-size: 14pt;
+      line-height: 1.42;
+      color: #0f172a;
+      user-select: auto;
+    }
+
+    /* 課堂懸浮工具列 (純 Emoji 極簡膠囊) */
+    .classroom-toolbar {
+      position: fixed;
+      top: 14px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 4px 8px;
+      border-radius: 40px;
+      border: 1px solid rgba(203, 213, 225, 0.9);
+      box-shadow: 0 4px 22px rgba(0, 0, 0, 0.12);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      color: #334155;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      padding: 0;
+      user-select: none;
+    }
+    .tool-btn:hover {
+      background: #f1f5f9;
+      transform: scale(1.1);
+    }
+    .tool-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+    }
+    .btn-toggle-ans.active {
+      background: #eff6ff;
+      border-color: #0284c7;
+    }
+    .toolbar-divider {
+      width: 1px;
+      height: 18px;
+      background: #cbd5e1;
+      margin: 0 3px;
+    }
+
+    /* 目錄跳轉選單 (TOC Floating Menu) */
+    .toc-menu {
+      display: none;
+      position: absolute;
+      top: 46px;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      padding: 6px 0;
+      min-width: 290px;
+      max-height: 450px;
+      overflow-y: auto;
+      z-index: 10000;
+    }
+    .toc-menu.show {
+      display: block;
+      animation: tocFadeIn 0.15s ease-out;
+    }
+    @keyframes tocFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toc-menu-title {
+      padding: 6px 16px 8px 16px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #64748b;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .toc-menu-item {
+      padding: 6px 16px;
+      font-size: 13px;
+      color: #334155;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.12s, color 0.12s;
+    }
+    .toc-menu-item:hover {
+      background: #eff6ff;
+      color: #0284c7;
+      font-weight: bold;
+    }
+    .toc-page-badge {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: normal;
+    }
+    .toc-menu-item:hover .toc-page-badge {
+      color: #0284c7;
+    }
+
+    /* 畫筆設定列 */
+    .pen-options {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      margin-left: 2px;
+    }
+    .color-picker {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .color-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+    .color-dot.active {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 2px #0f172a;
+    }
+    .size-picker {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .size-btn {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #475569;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 7px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .size-btn.active {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+
+    /* A4 頁面容器 */
+    .pages-container {
+      padding: 20px 0 60px 0;
+    }
+    .page {
+      width: 210mm;
+      height: 297mm;
+      min-height: 297mm;
+      max-height: 297mm;
+      padding: 12mm 14mm 10mm 14mm;
+      margin: 0 auto 25px auto;
+      background: #ffffff;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.12);
+      page-break-after: always;
+      break-after: page;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 全頁透明畫布 */
+    .drawing-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 60;
+      pointer-events: none;
+    }
+    body.pen-mode .drawing-canvas {
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+
+    /* 頁首與頁尾 */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+    .main-title {
+      font-size: 16pt;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      color: #0369a1;
+    }
+    .user-info {
+      font-size: 12pt;
+      letter-spacing: 1px;
+      color: #475569;
+    }
+    .page-footer {
+      margin-top: auto;
+      text-align: center;
+      font-size: 11pt;
+      color: #64748b;
+      padding-top: 4px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* 區塊橫幅標題 */
+    .section-banner {
+      font-size: 14pt;
+      font-weight: bold;
+      background: #f0f9ff;
+      border-left: 5px solid #0284c7;
+      padding: 3px 10px;
+      margin: 5px 0 8px 0;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge {
+      display: inline-block;
+      padding: 1px 7px;
+      font-size: 11pt;
+      font-weight: bold;
+      border-radius: 12px;
+      background: #0284c7;
+      color: #fff;
+      margin-right: 6px;
+    }
+    .badge-sub {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    /* 題目互動樣式 */
+    .interactive-item {
+      padding: 3px 6px;
+      border-radius: 5px;
+      transition: background 0.15s;
+      margin-bottom: 4px;
+    }
+    body:not(.pen-mode) .interactive-item {
+      cursor: pointer;
+    }
+    body:not(.pen-mode) .interactive-item:hover {
+      background-color: #f8fafc;
+      outline: 1.5px dashed #93c5fd;
+    }
+    .item-title {
+      font-weight: bold;
+      font-size: 13.5pt;
+      line-height: 1.4;
+    }
+
+    /* 答案顯現樣式 */
+    .ans-reveal {
+      display: inline-block;
+      min-width: 28px;
+      color: transparent;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    .show-ans .ans-reveal,
+    .interactive-item.ans-done .ans-reveal,
+    .interactive-item.show-one .ans-reveal {
+      color: #dc2626 !important;
+    }
+
+    /* 答題寫作底線 */
+    .write-blank {
+      display: inline-block;
+      min-width: 45px;
+      border-bottom: 1.5px solid #334155;
+      text-align: center;
+      padding: 0 4px;
+    }
+
+    /* 雙欄網格 */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 16px;
+      row-gap: 6px;
+    }
+    .col-divider {
+      border-right: 1px solid #cbd5e1;
+      padding-right: 12px;
+    }
+
+    /* 表格樣式 */
+    table.custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 4px 0 8px 0;
+      font-size: 12.5pt;
+    }
+    table.custom-table th, table.custom-table td {
+      border: 1px solid #64748b;
+      padding: 3px 6px;
+      text-align: center;
+    }
+    table.custom-table th {
+      background-color: #e2e8f0;
+      font-weight: bold;
+    }
+
+    /* 觀念引導盒 */
+    .concept-box {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-size: 13.5pt;
+    }
+
+    /* 筆記與小秘訣盒 */
+    .note-card {
+      background: #fffbeb;
+      border: 1.5px dashed #f59e0b;
+      border-radius: 6px;
+      padding: 5px 10px;
+      margin-bottom: 5px;
+      font-size: 12.5pt;
+    }
+
+    /* 計算留白空間 (3~4行標準細虛線草稿框) */
+    .calc-workspace {
+      min-height: 70px;
+      margin: 4px 0 6px 0;
+      padding: 4px 8px;
+      border: 1.2px dashed #94a3b8;
+      border-radius: 6px;
+      background-color: #fafbfc;
+      position: relative;
+    }
+    .calc-solution {
+      font-size: 13pt;
+      line-height: 1.45;
+    }
+    .calc-step {
+      color: transparent;
+      line-height: 1.5;
+      transition: color 0.15s ease;
+      user-select: none;
+    }
+    .calc-step.show,
+    .show-ans .calc-step {
+      color: #dc2626 !important;
+      font-weight: bold;
+    }
+
+    /* 列印專用樣式：還原 100% 白紙卷 */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm 12mm;
+      }
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .no-print,
+      .classroom-toolbar,
+      .toc-menu,
+      .drawing-canvas {
+        display: none !important;
+      }
+      .pages-container {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .page {
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        height: 275mm !important;
+        max-height: 275mm !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        overflow: hidden !important;
+      }
+      .page:last-child {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+      .page-footer {
+        position: static !important;
+        margin-top: auto !important;
+        padding-top: 4px !important;
+        border-top: 1px solid #ccc !important;
+      }
+      .ans-reveal {
+        color: transparent !important;
+      }
+      .calc-workspace {
+        border: 1px dashed #94a3b8 !important;
+        background: transparent !important;
+      }
+      .calc-step {
+        color: transparent !important;
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 課堂極簡 Emoji 膠囊工具列 -->
+  <div class="classroom-toolbar no-print">
+    <!-- 1. 章節目錄 -->
+    <div style="position: relative;">
+      <button class="tool-btn" id="tocBtn" onclick="toggleTocMenu(event)" title="章節目錄導覽">📑</button>
+      <div class="toc-menu" id="tocMenu">
+        <div class="toc-menu-title">📖 單元章節目錄 (P.1 ~ P.19)</div>
+        <div class="toc-menu-item" onclick="jumpTo('page-1')"><span>P.1 概念 ❶ 縮放圖形</span><span class="toc-page-badge">P.1</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-2')"><span>P.2 概念 ❷ 線段的縮放</span><span class="toc-page-badge">P.2</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-3')"><span>P.3 概念 ❸ 角的縮放</span><span class="toc-page-badge">P.3</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-4')"><span>P.4 概念 ❹ 多邊形的縮放(放大)</span><span class="toc-page-badge">P.4</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-5')"><span>P.5 概念 ❺ 多邊形的縮放(縮小)</span><span class="toc-page-badge">P.5</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-6')"><span>P.6 例題 ❶ 縮放求角度和長度</span><span class="toc-page-badge">P.6</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-7')"><span>P.7 概念 ❻ 相似多邊形</span><span class="toc-page-badge">P.7</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-8')"><span>P.8 相似多邊形邊角練習</span><span class="toc-page-badge">P.8</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-9')"><span>P.9 例題 ❷ 對應角相等與對應邊比例</span><span class="toc-page-badge">P.9</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-10')"><span>P.10 概念 ❼ 相似多邊形如何判別</span><span class="toc-page-badge">P.10</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-11')"><span>P.11 例題 ❸ 四邊形的相似</span><span class="toc-page-badge">P.11</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-12')"><span>P.12 一定相似的圖形探討</span><span class="toc-page-badge">P.12</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-13')"><span>P.13 概念 ❽ AAA 相似 (AA 相似)</span><span class="toc-page-badge">P.13</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-14')"><span>P.14 例題 ❹ AAA (AA) 相似練習</span><span class="toc-page-badge">P.14</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-15')"><span>P.15 AA 相似進階練習</span><span class="toc-page-badge">P.15</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-16')"><span>P.16 概念 ❾ SSS 相似</span><span class="toc-page-badge">P.16</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-17')"><span>P.17 例題 ❺ SSS 相似練習</span><span class="toc-page-badge">P.17</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-18')"><span>P.18 概念 ❿ SAS 相似</span><span class="toc-page-badge">P.18</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-19')"><span>P.19 例題 ❻ SAS 相似練習</span><span class="toc-page-badge">P.19</span></div>
+      </div>
+    </div>
+
+    <!-- 2. 一鍵切換全卷答案 -->
+    <button class="tool-btn btn-toggle-ans" id="toggleAllAnsBtn" onclick="toggleAllAnswers()" title="一鍵全開/全隱答案"><span id="ansIcon">👁️</span></button>
+
+    <!-- 3. 畫筆開關 -->
+    <button class="tool-btn" id="penBtn" onclick="togglePenMode()" title="螢光筆/板書筆">✏️</button>
+
+    <!-- 4. 畫筆選項 -->
+    <div class="pen-options" id="penOptions">
+      <div class="color-picker">
+        <span class="color-dot active" style="background:#facc15;" onclick="setPenColor('rgba(250, 204, 21, 0.45)', this)" title="螢光黃"></span>
+        <span class="color-dot" style="background:#ef4444;" onclick="setPenColor('rgba(239, 68, 68, 0.8)', this)" title="紅筆"></span>
+        <span class="color-dot" style="background:#3b82f6;" onclick="setPenColor('rgba(37, 99, 235, 0.8)', this)" title="藍筆"></span>
+        <span class="color-dot" style="background:#10b981;" onclick="setPenColor('rgba(16, 185, 129, 0.8)', this)" title="綠筆"></span>
+      </div>
+      <div class="sub-divider" style="width:1px; height:14px; background:#cbd5e1; margin:0 2px;"></div>
+      <div class="size-picker">
+        <button class="size-btn active" onclick="setPenSize(4, this)">細</button>
+        <button class="size-btn" onclick="setPenSize(10, this)">中</button>
+        <button class="size-btn" onclick="setPenSize(20, this)">粗</button>
+      </div>
+    </div>
+
+    <!-- 5. 清除筆跡 -->
+    <button class="tool-btn" onclick="clearAllDrawings()" title="清除本卷筆跡">🧹</button>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- 6. 列印 -->
+    <button class="tool-btn" onclick="window.print()" title="列印為學生紙本評量卷">🖨️</button>
+  </div>
+
+  <div class="pages-container">
+
+  <div class="page" id="page-1">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❶</span>縮放圖形</div>
+      <span class="badge badge-sub">形狀相同與等比例縮放</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="interactive-item" onclick="toggleItemAnswer(this)">
+        ☆ 在國小的時候，我們學過利用縮放的方法，將一張圖片放大（或縮小）成與原來形狀相同的新圖片。大小可能不同，但是形狀相同，我們稱為 
+        <span class="write-blank"><span class="ans-reveal">縮放圖形</span></span>，也叫做 
+        <span class="write-blank"><span class="ans-reveal">相似形</span></span>。
+      </div>
+      <div class="note-card" style="margin-top: 4px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 核心筆記</div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          ❶ 縮放圖形就是：<span class="write-blank"><span class="ans-reveal">形狀相同、大小不同（或成比例縮放）</span></span>。<br>
+          ❷ 圖形縮放後若會重疊在一起就是：<span class="write-blank"><span class="ans-reveal">全等（相似形之特例，縮放倍率為 1 倍）</span></span>。
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❶</span>縮放圖形判定</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 判斷下列圖形中，哪一個才是左圖照片的縮放圖形？</div>
+          <div style="display: flex; gap: 8px; align-items: center; margin: 4px 0;">
+            <div style="border:1px solid #94a3b8; padding:3px; text-align:center; border-radius:4px;">
+              <span style="font-size: 20px;">🐼</span><br><span style="font-size:10pt;">原圖</span>
+            </div>
+            <div style="font-size:11pt;">
+              (A) 寬放大 2 倍<br>
+              (B) 長放大 2 倍<br>
+              (C) 長寬都放大 2 倍，角度不變
+            </div>
+          </div>
+          答：<span class="write-blank"><span class="ans-reveal">(C)</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 判斷下列圖形中，哪一個才是左圖照片的縮放圖形？</div>
+          <div style="display: flex; gap: 8px; align-items: center; margin: 4px 0;">
+            <div style="border:1px solid #94a3b8; padding:3px; text-align:center; border-radius:4px;">
+              <span style="font-size: 20px;">🐱</span><br><span style="font-size:10pt;">原圖</span>
+            </div>
+            <div style="font-size:11pt;">
+              (A) 橫向壓扁<br>
+              (B) 縱向拉長<br>
+              (C) 等比例均勻放大
+            </div>
+          </div>
+          答：<span class="write-blank"><span class="ans-reveal">(C)</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 判斷下列圖形中，哪一個選項是左圖長方形的縮放圖形？</div>
+          <div style="display: flex; gap: 8px; align-items: center; margin: 4px 0;">
+            <svg width="65" height="45" viewBox="0 0 65 45">
+              <rect x="5" y="5" width="55" height="35" fill="none" stroke="#334155" stroke-width="1.5" />
+              <text x="30" y="3" font-size="9">3</text>
+              <text x="62" y="24" font-size="9">2</text>
+            </svg>
+            <div style="font-size:11pt;">
+              (A) 邊長 3 與 2 但內角為 105° 的平行四邊形<br>
+              (B) 邊長為 2 的正方形<br>
+              (C) 長 6、寬 4 的長方形
+            </div>
+          </div>
+          答：<span class="write-blank"><span class="ans-reveal">(C)</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 判斷下列圖形中，哪一個選項是左圖正方形的縮放圖形？</div>
+          <div style="display: flex; gap: 8px; align-items: center; margin: 4px 0;">
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <rect x="5" y="5" width="40" height="40" fill="none" stroke="#334155" stroke-width="1.5" />
+              <text x="22" y="3" font-size="9">3</text>
+              <text x="47" y="26" font-size="9">3</text>
+            </svg>
+            <div style="font-size:11pt;">
+              (A) 邊長為 2 但內角為 75° 的菱形<br>
+              (B) 長 3、寬 2 的長方形<br>
+              (C) 邊長為 2 的正方形
+            </div>
+          </div>
+          答：<span class="write-blank"><span class="ans-reveal">(C)</span></span>
+        </div>
+
+        <div class="note-card" style="margin-top: 8px; background:#fff1f2; border-color:#f43f5e;">
+          <div style="font-weight: bold; color:#e11d48; margin-bottom: 2px;">💡 發現</div>
+          <div>角度一變，形狀就不相同！縮放圖形必須維持「對應角相等、對應邊成比例」。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 1 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-2">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❷</span>線段的縮放</div>
+      <span class="badge badge-sub">縮放中心與縮放倍率</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="grid-2col">
+        <div class="col-divider">
+          <div style="font-weight: bold; margin-bottom: 2px;">☆ 縮放中心和縮放倍率</div>
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ❶ 縮放中心：<span class="write-blank"><span class="ans-reveal">固定之基準頂點或點 O</span></span><br>
+            ❷ 縮放倍率：<span class="write-blank"><span class="ans-reveal">縮放後線段長與原線段長之比值</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="note-card">
+            <div style="font-weight: bold; margin-bottom: 2px;">☆ 筆記：影印機生活概念</div>
+            <div class="interactive-item" onclick="toggleItemAnswer(this)">
+              ❶ 按下 200% 表示：<span class="write-blank"><span class="ans-reveal">放大為原來的 2 倍</span></span><br>
+              ❷ 按下 50% 表示：<span class="write-blank"><span class="ans-reveal">縮小為原來的 0.5 倍（1/2 倍）</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❷</span>線段縮放作圖與計算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 線段縮放作圖</div>
+          (1) 畫出以 A 點為縮放中心，將 AB 放大 3 倍的 AB'。<br>
+          (2) 畫出以 B 點為縮放中心，將 AB 放大 3 倍的 A'B。
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="200" height="55" viewBox="0 0 200 55">
+              <!-- Grid lines -->
+              <defs><pattern id="grid1" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/></pattern></defs>
+              <rect width="200" height="55" fill="url(#grid1)" stroke="#cbd5e1" />
+              <!-- Original AB (len 20) -->
+              <line x1="40" y1="25" x2="80" y2="25" stroke="#334155" stroke-width="2" />
+              <circle cx="40" cy="25" r="3" fill="#334155" /><text x="36" y="20" font-size="10">A</text>
+              <circle cx="80" cy="25" r="3" fill="#334155" /><text x="76" y="20" font-size="10">B</text>
+              <!-- 3x extended line (len 120) -->
+              <line x1="40" y1="42" x2="160" y2="42" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3,3" />
+              <circle cx="160" cy="42" r="3" fill="#0284c7" /><text x="162" y="45" font-size="10" fill="#0284c7">B'</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 縮放中心在外部</div>
+          (1) 以 O 點為中心，將 CD 放大 3 倍得 C'D'。<br>
+          (2) 以 O 點為中心，將 AB 縮小為 1/4 倍得 A'B'。
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 如圖，O、A、A' 三點在同一直線上，若 OA' : OA ＝ 3 : 1：</div>
+          (1) OA' 是 OA 的 <span class="write-blank"><span class="ans-reveal">3</span></span> 倍縮放圖形。<br>
+          (2) 若 OA ＝ 3，則 OA' ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="200" height="45" viewBox="0 0 200 45">
+              <line x1="20" y1="22" x2="180" y2="22" stroke="#334155" stroke-width="1.5" />
+              <circle cx="30" cy="22" r="3" fill="#334155" /><text x="27" y="16" font-size="10">O</text>
+              <circle cx="70" cy="22" r="3" fill="#334155" /><text x="67" y="16" font-size="10">A</text>
+              <circle cx="150" cy="22" r="3" fill="#0284c7" /><text x="145" y="16" font-size="10" fill="#0284c7">A'</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 如圖，O、B、B' 三點在同一直線上，若 OB' ＝ 3，BB' ＝ 12：</div>
+          (1) OB' : OB ＝ <span class="write-blank"><span class="ans-reveal">3 : 15 ＝ 1 : 5</span></span><br>
+          (2) OB' 是 OB 的 <span class="write-blank"><span class="ans-reveal">1/5</span></span> 倍縮放圖形。
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="200" height="45" viewBox="0 0 200 45">
+              <line x1="20" y1="22" x2="180" y2="22" stroke="#334155" stroke-width="1.5" />
+              <circle cx="30" cy="22" r="3" fill="#334155" /><text x="27" y="16" font-size="10">B</text>
+              <circle cx="120" cy="22" r="3" fill="#0284c7" /><text x="115" y="16" font-size="10" fill="#0284c7">B'</text>
+              <circle cx="150" cy="22" r="3" fill="#334155" /><text x="147" y="16" font-size="10">O</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 2 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-3">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❸</span>角的縮放</div>
+      <span class="badge badge-sub">角度不變與長度成比例</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="grid-2col">
+        <div class="col-divider">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ☆ 如果把一個邊長 3 公分的正方形放進影印機按下 200% 之後，請問影印出來的結果為何？<br>
+            答：<span class="write-blank"><span class="ans-reveal">邊長變為 6 公分，四個內角依然是 90 度！</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="note-card">
+            <div style="font-weight: bold; margin-bottom: 2px;">💡 核心結論</div>
+            <div class="interactive-item" onclick="toggleItemAnswer(this)">
+              圖形經過縮放之後：<br>
+              • 角度：<span class="write-blank"><span class="ans-reveal">不變（對應角相等）</span></span><br>
+              • 長度：<span class="write-blank"><span class="ans-reveal">成比例（對應邊成比例）</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❸</span>縮放後角度與邊長演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 邊長 4 公分正方形經影印機按下 150%：</div>
+          (1) 150% 表示縮放 <span class="write-blank"><span class="ans-reveal">1.5（或 3/2）</span></span> 倍。<br>
+          (2) 縮放後的邊長為 <span class="write-blank"><span class="ans-reveal">6</span></span> 公分，一個內角為 <span class="write-blank"><span class="ans-reveal">90</span></span> 度。
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 邊長 5 公分正六邊形經影印機按下 80%：</div>
+          (1) 80% 表示縮放 <span class="write-blank"><span class="ans-reveal">0.8（或 4/5）</span></span> 倍。<br>
+          (2) 縮放後的邊長為 <span class="write-blank"><span class="ans-reveal">4</span></span> 公分，一個內角為 <span class="write-blank"><span class="ans-reveal">120</span></span> 度。
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 直角 △ABC 縮放 300% 後得到 △DEF（對應點 D、E、F，∠C＝90°，∠B＝40°，BC＝5）：</div>
+          (1) 300% 表示縮放 <span class="write-blank"><span class="ans-reveal">3</span></span> 倍。<br>
+          (2) ∠E ＝ <span class="write-blank"><span class="ans-reveal">40°</span></span>，∠F ＝ <span class="write-blank"><span class="ans-reveal">90°</span></span>，EF ＝ <span class="write-blank"><span class="ans-reveal">15</span></span>。
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 判斷下列是不是縮放圖形？若不是請說明原因。</div>
+          (1) 矩形 3×2 與 平行四邊形 9×6（內角 75°）：<br>
+          答：<span class="write-blank"><span class="ans-reveal">不是，原因：角度不同（不是 90°）</span></span><br><br>
+          (2) 矩形 3×2 與 正方形 6×6：<br>
+          答：<span class="write-blank"><span class="ans-reveal">不是，原因：邊長不成比例（3/6 ≠ 2/6）</span></span><br><br>
+          (3) 矩形 3×2 與 矩形 6×9：<br>
+          答：<span class="write-blank"><span class="ans-reveal">是，放大 3 倍的縮放圖形（旋轉 90° 後對應）</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 3 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-4">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❹</span>多邊形的縮放（放大）</div>
+      <span class="badge badge-sub">以頂點或外部點為縮放中心</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="interactive-item" onclick="toggleItemAnswer(this)">
+        ☆ 畫出 △ABC 縮放為 2 倍的圖形：<br>
+        • 以頂點 A 為中心：將射線 AB 與 AC 長度各延長為 2 倍得 B' 與 C'，連接 B'C'。<br>
+        • 以內部點或外部點 O 為中心：將 OA、OB、OC 分別延長為 2 倍得 A'、B'、C'。
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❹</span>三角形放大作圖與長度計算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 網格放大作圖練習</div>
+          (1) 畫出以 A 點為縮放中心，將 △ABC 放大 3 倍後的 △AB'C'。<br>
+          (2) 畫出以 O 點為縮放中心，將 △ABC 放大 3 倍後的 △A'B'C'。<br>
+          (3) 畫出以 O 點為縮放中心，將 △ABC 放大 3 倍後的 △A'B'C'。
+          <div style="text-align: center; margin: 6px 0;">
+            <svg width="180" height="90" viewBox="0 0 180 90">
+              <defs><pattern id="grid4" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M 15 0 L 0 0 0 15" fill="none" stroke="#e2e8f0" stroke-width="1"/></pattern></defs>
+              <rect width="180" height="90" fill="url(#grid4)" stroke="#cbd5e1" />
+              <polygon points="60,30 45,60 90,60" fill="rgba(2, 132, 199, 0.2)" stroke="#0284c7" stroke-width="1.5" />
+              <text x="58" y="24" font-size="10">A</text>
+              <text x="35" y="65" font-size="10">B</text>
+              <text x="94" y="65" font-size="10">C</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △AB'C' 是 △ABC 以 A 點為中心的縮放圖形，若 AB : AB' ＝ 1 : 3，AC : AC' ＝ 1 : 3：</div>
+          (1) BC : B'C' ＝ <span class="write-blank"><span class="ans-reveal">1 : 3</span></span><br>
+          (2) △AB'C' 是 △ABC 的 <span class="write-blank"><span class="ans-reveal">3</span></span> 倍縮放圖形。<br>
+          (3) 若 BC ＝ 3，則 B'C' ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 10px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. △AB'C' 是 △ABC 以 A 點為中心的縮放圖形，若 AB : AB' ＝ 1 : 2，AC : AC' ＝ 1 : 2：</div>
+          (1) BC : B'C' ＝ <span class="write-blank"><span class="ans-reveal">1 : 2</span></span><br>
+          (2) △AB'C' 是 △ABC 的 <span class="write-blank"><span class="ans-reveal">2</span></span> 倍縮放圖形。<br>
+          (3) 若 BC ＝ 6，則 B'C' ＝ <span class="write-blank"><span class="ans-reveal">12</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 4 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-5">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❺</span>多邊形的縮放（縮小）</div>
+      <span class="badge badge-sub">多邊形縮小作圖</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="interactive-item" onclick="toggleItemAnswer(this)">
+        ☆ 畫出五邊形 ABCDE 縮放為 1/2 倍的圖形：<br>
+        • 以 A 點為中心：取各頂點到 A 距離的 1/2 處作為新頂點。<br>
+        • 以內部點 O 為中心：取 OA、OB、OC、OD、OE 的中點作為新頂點。
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❺</span>四邊形與五邊形縮小演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 四邊形縮放 1/2 倍</div>
+          (1) 畫出以 A 點為縮放中心，將四邊形 ABCD 縮放 1/2 倍後的四邊形 AB'C'D'。<br>
+          (2) 畫出以 O 點為縮放中心，將四邊形 ABCD 縮放 1/2 倍後的四邊形 A'B'C'D'。
+          <div style="text-align: center; margin: 6px 0;">
+            <svg width="180" height="90" viewBox="0 0 180 90">
+              <defs><pattern id="grid5" width="15" height="15" patternUnits="userSpaceOnUse"><path d="M 15 0 L 0 0 0 15" fill="none" stroke="#e2e8f0" stroke-width="1"/></pattern></defs>
+              <rect width="180" height="90" fill="url(#grid5)" stroke="#cbd5e1" />
+              <polygon points="60,15 15,45 45,75 135,60" fill="none" stroke="#334155" stroke-width="1.5" />
+              <text x="60" y="12" font-size="10">A</text>
+              <text x="5" y="47" font-size="10">B</text>
+              <text x="40" y="85" font-size="10">C</text>
+              <text x="140" y="63" font-size="10">D</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 五邊形縮放 1/3 倍</div>
+          (1) 畫出以 A 點為縮放中心，將五邊形 ABCDE 縮放 1/3 倍後的五邊形 AB'C'D'E'。<br>
+          (2) 畫出以 O 點為縮放中心，將五邊形 ABCDE 縮放 1/3 倍後的五邊形 A'B'C'D'E'。
+          <div style="text-align: center; margin: 6px 0;">
+            <svg width="180" height="90" viewBox="0 0 180 90">
+              <rect width="180" height="90" fill="url(#grid5)" stroke="#cbd5e1" />
+              <polygon points="45,15 15,45 45,75 120,75 105,30" fill="none" stroke="#334155" stroke-width="1.5" />
+              <text x="42" y="12" font-size="10">A</text>
+              <text x="5" y="47" font-size="10">B</text>
+              <text x="40" y="85" font-size="10">C</text>
+              <text x="122" y="78" font-size="10">D</text>
+              <text x="108" y="27" font-size="10">E</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 5 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-6">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❶</span>縮放圖形求角度和長度</div>
+      <span class="badge badge-sub">逐步點擊揭曉解題算式</span>
+    </div>
+
+    <div class="interactive-item" onclick="toggleItemAnswer(this)">
+      <div class="item-title">如圖，△ABC 是 △DEF 縮放為 3 倍的圖形，V 為縮放中心。若 ∠A ＝ 45°，∠B ＝ 55°，DE ＝ 3：<br>
+      求 ∠D ＝ <span class="write-blank"><span class="ans-reveal">45°</span></span>，∠E ＝ <span class="write-blank"><span class="ans-reveal">55°</span></span>，∠DFE ＝ <span class="write-blank"><span class="ans-reveal">80°</span></span>，AB ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>。</div>
+      <div class="calc-workspace">
+        <div class="calc-solution">
+          <div class="calc-step">＝ 縮放後對應角相等 ⇒ ∠D ＝ ∠A ＝ 45°，∠E ＝ ∠B ＝ 55°</div>
+          <div class="calc-step">＝ 三角形內角和 180° ⇒ ∠DFE ＝ 180° - 45° - 55° ＝ 80°</div>
+          <div class="calc-step">＝ 縮放倍率為 3 倍 ⇒ AB ＝ 3 × DE ＝ 3 × 3 ＝ 9</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ❻</span>縮放中心求邊長與角度演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. O 為外部一點，△A'B'C' 是 △ABC 放大 4 倍的圖形。若 ∠A＝90°，∠B＝60°，BC＝3：</div>
+          (1) OB' : OB ＝ <span class="write-blank"><span class="ans-reveal">4 : 1</span></span><br>
+          (2) B'C' ＝ <span class="write-blank"><span class="ans-reveal">12</span></span>（3 × 4 ＝ 12）<br>
+          (3) ∠A' ＝ <span class="write-blank"><span class="ans-reveal">90°</span></span>，∠C' ＝ <span class="write-blank"><span class="ans-reveal">30°</span></span>（180°-90°-60°）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △A'B'C' 是以 O 點為中心將 △ABC 放大之圖形，AB＝6，AC＝5，A'B'＝24，∠CAB＝30°：</div>
+          (1) A'B' : AB ＝ <span class="write-blank"><span class="ans-reveal">4 : 1</span></span><br>
+          (2) △A'B'C' 是 △ABC 的 <span class="write-blank"><span class="ans-reveal">4</span></span> 倍縮放圖形。<br>
+          (3) A'C' ＝ <span class="write-blank"><span class="ans-reveal">20</span></span>（5 × 4 ＝ 20）<br>
+          (4) ∠C'A'B' ＝ <span class="write-blank"><span class="ans-reveal">30°</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. O 為外部一點，△A'B'C' 是 △ABC 縮小 1/2 倍之圖形，AB＝6，AC＝7，∠ABC＝70°，∠C'A'B'＝50°：</div>
+          (1) OA' : OA ＝ <span class="write-blank"><span class="ans-reveal">1 : 2</span></span><br>
+          (2) A'C' : AC ＝ <span class="write-blank"><span class="ans-reveal">1 : 2</span></span><br>
+          (3) A'B' ＝ <span class="write-blank"><span class="ans-reveal">3</span></span>（6 × 1/2 ＝ 3）<br>
+          (4) ∠A'C'B' ＝ <span class="write-blank"><span class="ans-reveal">60°</span></span>（180°-50°-70°）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. O 為內部一點，△A'B'C' 是 △ABC 縮小 1/2 倍之圖形，AB＝10，AC＝6，∠ABC＝40°，∠CAB＝85°：</div>
+          (1) OC' : OC ＝ <span class="write-blank"><span class="ans-reveal">1 : 2</span></span><br>
+          (2) A'C' : AC ＝ <span class="write-blank"><span class="ans-reveal">1 : 2</span></span><br>
+          (3) A'B' ＝ <span class="write-blank"><span class="ans-reveal">5</span></span>（10 × 1/2 ＝ 5）<br>
+          (4) ∠A'C'B' ＝ <span class="write-blank"><span class="ans-reveal">55°</span></span>（180°-40°-85°）
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 6 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-7">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❻</span>相似多邊形</div>
+      <span class="badge badge-sub">符號 ∼ 與對應關係</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="interactive-item" onclick="toggleItemAnswer(this)">
+        ☆ 當一個圖形甲經過縮放可以得到新的圖形乙，它的形狀不變，只是大小改變，我們說甲和乙是 <span class="write-blank"><span class="ans-reveal">相似形</span></span>，也叫做 <span class="write-blank"><span class="ans-reveal">相似多邊形</span></span>，符號：<span class="write-blank"><span class="ans-reveal">∼</span></span>（唸成 <span class="write-blank"><span class="ans-reveal">相似於</span></span>）。
+      </div>
+      <div style="display: flex; gap: 15px; align-items: center; margin-top: 5px;">
+        <svg width="180" height="75" viewBox="0 0 180 75">
+          <polygon points="50,15 80,20 70,55 35,50" fill="none" stroke="#334155" stroke-width="1.5" />
+          <polygon points="90,10 160,20 140,70 70,60" fill="none" stroke="#0284c7" stroke-width="1.5" />
+          <text x="45" y="12" font-size="10">A</text><text x="82" y="18" font-size="10">B</text><text x="72" y="62" font-size="10">C</text><text x="25" y="55" font-size="10">D</text>
+          <text x="85" y="8" font-size="10" fill="#0284c7">E</text><text x="165" y="18" font-size="10" fill="#0284c7">F</text><text x="145" y="75" font-size="10" fill="#0284c7">G</text><text x="60" y="68" font-size="10" fill="#0284c7">H</text>
+        </svg>
+        <div style="flex: 1; font-size: 13pt;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            四邊形 ABCD ∼ 四邊形 EFGH：<br>
+            • 對應角：∠A 對應 ∠E，∠B 對應 ∠F，∠C 對應 ∠G，∠D 對應 ∠H<br>
+            • 對應邊：AB 對應 EF，BC 對應 FG，CD 對應 GH，DA 對應 HE
+          </div>
+        </div>
+      </div>
+      <div class="note-card" style="margin-top: 4px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 核心筆記</div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          • 全等圖形「<span class="write-blank"><span class="ans-reveal">一定是</span></span>」相似形（縮放倍率為 1 倍）。<br>
+          • 相似圖形「<span class="write-blank"><span class="ans-reveal">不一定是</span></span>」全等圖形。<br>
+          • 若 ABCD ∼ EFGH，則 A 的對應點一定是 E（必須按順序標示）。
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❼</span>相似多邊形對應邊角</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 已知四邊形 ABCD ∼ 四邊形 PQRS（A、B、C、D 對應 P、Q、R、S）：</div>
+          (1) ∠A 的對應角是 <span class="write-blank"><span class="ans-reveal">∠P</span></span>，∠Q 的對應角是 <span class="write-blank"><span class="ans-reveal">∠B</span></span>。<br>
+          (2) DC 的對應邊是 <span class="write-blank"><span class="ans-reveal">SR</span></span>，PS 的對應邊是 <span class="write-blank"><span class="ans-reveal">AD</span></span>。
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 將長方形 ABCD 放大為 3 倍，得到長方形 EFGH：</div>
+          (1) 我們說：長方形 ABCD <span class="write-blank"><span class="ans-reveal">∼</span></span> 長方形 EFGH<br>
+          (2) AB : EF ＝ <span class="write-blank"><span class="ans-reveal">1 : 3</span></span><br>
+          (3) 若 AD ＝ 6，則 EH ＝ <span class="write-blank"><span class="ans-reveal">18</span></span>（6 × 3 ＝ 18）<br>
+          (4) ∠E ＝ <span class="write-blank"><span class="ans-reveal">90°</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 7 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-8">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❼ (續)</span>相似多邊形邊長與內角演練</div>
+      <span class="badge badge-sub">對應角相等與對應邊成比例</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 四邊形 EFGH 是四邊形 ABCD 的 1/3 倍縮小圖：</div>
+          (1) 四邊形 EFGH <span class="write-blank"><span class="ans-reveal">∼</span></span> 四邊形 ABCD<br>
+          (2) AB : EF ＝ <span class="write-blank"><span class="ans-reveal">3 : 1</span></span><br>
+          (3) EH ＝ <span class="write-blank"><span class="ans-reveal">2</span></span>（6 × 1/3），GH ＝ <span class="write-blank"><span class="ans-reveal">5</span></span>（15 × 1/3）<br>
+          (4) 若 ∠BCD ＝ 80°，則 ∠FGH ＝ <span class="write-blank"><span class="ans-reveal">80°</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 四邊形 PQRS ∼ 四邊形 ABCD，AB : PQ ＝ 1 : 3：</div>
+          (1) 四邊形 PQRS 是四邊形 ABCD 的 <span class="write-blank"><span class="ans-reveal">3</span></span> 倍縮放圖形。<br>
+          (2) AD 對應邊是 <span class="write-blank"><span class="ans-reveal">PS</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">6</span></span>；QR 對應邊是 <span class="write-blank"><span class="ans-reveal">BC</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">5</span></span>。<br>
+          (3) ∠R ＝ <span class="write-blank"><span class="ans-reveal">30°</span></span>，∠S ＝ <span class="write-blank"><span class="ans-reveal">140°</span></span>（360°-60°-130°-30°）
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">5. 四邊形 PQRS ∼ 四邊形 ABCD，PQ / AB ＝ 1/2：</div>
+          (1) 四邊形 PQRS 是四邊形 ABCD 的 <span class="write-blank"><span class="ans-reveal">1/2</span></span> 倍縮放圖形。<br>
+          (2) BC 對應邊是 <span class="write-blank"><span class="ans-reveal">QR</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">8</span></span>；PS 對應邊是 <span class="write-blank"><span class="ans-reveal">AD</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">10</span></span>。<br>
+          (3) ∠Q ＝ <span class="write-blank"><span class="ans-reveal">80°</span></span>，∠S ＝ <span class="write-blank"><span class="ans-reveal">85°</span></span>（360°-125°-80°-70°）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">6. 四邊形 ABCD ∼ 四邊形 PQRS，∠P＝66°，∠Q＝92°，∠R＝120°：</div>
+          (1) DC : SR ＝ <span class="write-blank"><span class="ans-reveal">3 : 2</span></span><br>
+          (2) ∠C ＝ <span class="write-blank"><span class="ans-reveal">120°</span></span>，∠D ＝ <span class="write-blank"><span class="ans-reveal">82°</span></span>（360°-66°-92°-120°）<br>
+          (3) AD ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>（6 × 3/2），QR ＝ <span class="write-blank"><span class="ans-reveal">4</span></span>（6 × 2/3）
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 8 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-9">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❷</span>相似多邊形對應角相等對應邊成比例</div>
+      <span class="badge badge-sub">逐步點擊揭曉解題算式</span>
+    </div>
+
+    <div class="interactive-item" onclick="toggleItemAnswer(this)">
+      <div class="item-title">已知四邊形 ABCD ∼ 四邊形 EFGH，A、B、C、D 對應 E、F、G、H：<br>
+      (1) 若 ∠B＝90°，∠C＝110°，∠D＝68°，求 ∠E ＝ <span class="write-blank"><span class="ans-reveal">92°</span></span>。<br>
+      (2) 若 AB＝3，BC＝5，EF＝4，求 FG ＝ <span class="write-blank"><span class="ans-reveal">20/3</span></span>。</div>
+      <div class="calc-workspace">
+        <div class="calc-solution">
+          <div class="calc-step">＝ (1) 四邊形內角和 360° ⇒ ∠A ＝ 360° - 90° - 110° - 68° ＝ 92° ⇒ ∠E ＝ ∠A ＝ 92°</div>
+          <div class="calc-step">＝ (2) 對應邊成比例：AB : EF ＝ BC : FG ⇒ 3 : 4 ＝ 5 : FG ⇒ FG ＝ 20/3</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ❽</span>邊長與角度綜合求解</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. ABCD ∼ EFGH：</div>
+          (1) CD : GH ＝ <span class="write-blank"><span class="ans-reveal">2 : 5</span></span>（8 : 20）<br>
+          (2) AB 對應邊為 <span class="write-blank"><span class="ans-reveal">EF</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">5</span></span>；FG 對應邊為 <span class="write-blank"><span class="ans-reveal">BC</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">6</span></span>。<br>
+          (3) ∠A 對應角為 <span class="write-blank"><span class="ans-reveal">∠E</span></span>，度數為 <span class="write-blank"><span class="ans-reveal">80°</span></span>（360°-96°-100°-84°）。
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. ABCD ∼ EFGH：</div>
+          (1) BC : GF ＝ <span class="write-blank"><span class="ans-reveal">4 : 5</span></span>（16 : 20）<br>
+          (2) CD 對應邊為 <span class="write-blank"><span class="ans-reveal">GH</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">22.5</span></span>；EF 對應邊為 <span class="write-blank"><span class="ans-reveal">AB</span></span>。<br>
+          (3) ∠A 對應角為 <span class="write-blank"><span class="ans-reveal">∠E</span></span>。
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. ABCD ∼ EFGH，∠A＝90°，∠B＝75°，∠C＝80°：</div>
+          (1) AD : EH ＝ <span class="write-blank"><span class="ans-reveal">2 : 1</span></span>（10 : 5）<br>
+          (2) BC ＝ <span class="write-blank"><span class="ans-reveal">24</span></span>（12 × 2），GH ＝ <span class="write-blank"><span class="ans-reveal">6</span></span><br>
+          (3) ∠H ＝ <span class="write-blank"><span class="ans-reveal">115°</span></span>（360°-90°-75°-80°）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. ABCD ∼ EFGH，∠D＝30°，∠B＝92°：</div>
+          (1) BC ＝ <span class="write-blank"><span class="ans-reveal">6</span></span><br>
+          (2) ∠G ＝ <span class="write-blank"><span class="ans-reveal">92°</span></span><br>
+          (3) 四邊形 EFGH 周長 ＝ <span class="write-blank"><span class="ans-reveal">17</span></span>（6 + 2 + 3 + 6）
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 9 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-10">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❼</span>相似多邊形如何判別</div>
+      <span class="badge badge-sub">兩大條件缺一不可</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="interactive-item" onclick="toggleItemAnswer(this)">
+        ☆ 如何判別四邊形 ABCD 和 EFGH 是否相似？<br>
+        必須同時滿足以下兩個條件：<br>
+        ❶ <span class="write-blank"><span class="ans-reveal">對應角相等</span></span><br>
+        ❷ <span class="write-blank"><span class="ans-reveal">對應邊成比例</span></span><br>
+        ⇒ 兩者缺一不可，才能確定為「相似多邊形」！
+      </div>
+      <div class="note-card" style="margin-top: 4px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 核心提醒</div>
+        <div>只滿足對應角相等（如長方形與正方形）或只滿足對應邊成比例（如菱形與正方形），都不一定相似！</div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❾</span>四邊形相似判別演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. (1) 長方形 ABCD (9×3) 與 長方形 EFGH (15×5) 是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">是（對應角皆 90°，且 9/15 ＝ 3/5 ＝ 3/5）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. (2) 梯形 ABCD (上4下7腰5) 與 梯形 EFGH (上7下13腰10) 是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">否（邊長比 4/7 ≠ 7/13）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. (3) 兩個菱形（內角 60°/120° 與 70°/110°）是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">否（內角不相等）</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. (1) 長方形 ABCD 與 長方形 AFGH 是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">是（對應邊皆成比例 3:5）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. (2) 梯形 AFGD 與 梯形 FBCG 是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">否（對應邊不成比例）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. (3) 長方形 ABCD (6×4) 與 EFGH (7×6) 是否相似？EH 要增加多少公分才相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">不相似；EH 需為 9 公分，故要增加 2 公分（9 - 7 ＝ 2）</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 10 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-11">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❸</span>四邊形的相似辨析</div>
+      <span class="badge badge-sub">特殊四邊形相似判別檢核</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="grid-2col">
+        <div class="col-divider">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            (1) 長方形和正方形是否相似？<br>
+            答：<span class="write-blank"><span class="ans-reveal">否（對應角皆 90°，但邊長不一定成比例）</span></span>
+          </div>
+          <div class="interactive-item" style="margin-top: 4px;" onclick="toggleItemAnswer(this)">
+            (2) 菱形和正方形是否相似？<br>
+            答：<span class="write-blank"><span class="ans-reveal">否（四邊皆等長成比例，但對應角不一定相等）</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="note-card">
+            <div style="font-weight: bold; margin-bottom: 2px;">☆ 筆記生活思考</div>
+            <div class="interactive-item" onclick="toggleItemAnswer(this)">
+              新台幣 100 元與 1000 元鈔票是否相似？<br>
+              答：<span class="write-blank"><span class="ans-reveal">不相似（長寬比例不同）</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❿</span>常見幾何圖形相似檢核表</div>
+    </div>
+
+    <div class="interactive-item" onclick="toggleItemAnswer(this)">
+      <table class="custom-table">
+        <tr><th>圖形名稱</th><th>對應角相等</th><th>對應邊成比例</th><th>是否一定相似</th></tr>
+        <tr><td>兩個長方形</td><td><span class="ans-reveal">✓ (皆90°)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td></tr>
+        <tr><td>兩個平行四邊形</td><td><span class="ans-reveal">✗ (不一定)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td></tr>
+        <tr><td>兩個菱形</td><td><span class="ans-reveal">✗ (不一定)</span></td><td><span class="ans-reveal">✓ (四邊等長)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td></tr>
+        <tr><td>兩個直角三角形</td><td><span class="ans-reveal">✗ (僅直角同)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td></tr>
+        <tr><td>兩個等腰三角形</td><td><span class="ans-reveal">✗ (頂角不一定同)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td><td><span class="ans-reveal">✗ (不一定)</span></td></tr>
+        <tr><td>兩個等腰直角三角形</td><td><span class="ans-reveal">✓ (45°-45°-90°)</span></td><td><span class="ans-reveal">✓ (1:1:√2)</span></td><td><span class="ans-reveal">✓ (一定相似)</span></td></tr>
+      </table>
+    </div>
+
+    <div class="page-footer">第 11 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-12">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❿ (續)</span>正多邊形與變形辨析</div>
+      <span class="badge badge-sub">哪些圖形必定相似？</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 正多邊形相似檢核</div>
+          <table class="custom-table">
+            <tr><th>圖形名稱</th><th>對應角</th><th>對應邊</th><th>一定相似</th></tr>
+            <tr><td>兩個正三角形</td><td><span class="ans-reveal">✓ (60°)</span></td><td><span class="ans-reveal">✓ (等邊)</span></td><td><span class="ans-reveal">✓ 是</span></td></tr>
+            <tr><td>兩個正方形</td><td><span class="ans-reveal">✓ (90°)</span></td><td><span class="ans-reveal">✓ (等邊)</span></td><td><span class="ans-reveal">✓ 是</span></td></tr>
+            <tr><td>兩個正六邊形</td><td><span class="ans-reveal">✓ (120°)</span></td><td><span class="ans-reveal">✓ (等邊)</span></td><td><span class="ans-reveal">✓ 是</span></td></tr>
+          </table>
+          <div style="font-weight: bold; margin-top: 4px;">💡 結論發現：</div>
+          <div>所有「<span class="write-blank"><span class="ans-reveal">正 n 邊形</span></span>」一定彼此相似！</div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 長方形外框加寬反例</div>
+          長方形 ABCD (6×4) 各邊往外加 2 公分得 EFGH (10×8)：<br>
+          是否相似？答：<span class="write-blank"><span class="ans-reveal">否（6/10 ≠ 4/8，邊長不成比例）</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 正方形內縮必相似</div>
+          正方形 ABCD (邊長 8) 各邊往內減 2 後得小正方形 PQRS (邊長 4)：<br>
+          是否相似？答：<span class="write-blank"><span class="ans-reveal">是（所有正方形皆對應角相等且四邊等長，必相似）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 10px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 四個長方形配對找相似：</div>
+          • 甲：長 12、寬 9（比為 12:9 ＝ 4:3）<br>
+          • 乙：長 16、寬 9（比為 16:9）<br>
+          • 丙：長 12、寬 12（正方形 1:1）<br>
+          • 丁：長 16、寬 12（比為 16:12 ＝ 4:3）<br><br>
+          答：<span class="write-blank"><span class="ans-reveal">甲 和 丁 相似（長寬比皆為 4 : 3）</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 12 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-13">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❽</span>AAA 相似（AA 相似）</div>
+      <span class="badge badge-sub">兩角對應相等即相似</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="grid-2col">
+        <div class="col-divider">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ☆ 若 ∠A ＝ ∠D，∠B ＝ ∠E，∠C ＝ ∠F<br>
+            請問：△ABC 與 △DEF 是否相似？<br>
+            答：<span class="write-blank"><span class="ans-reveal">是（三內角對應相等，形狀完全相同，稱為 AAA 相似）</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="note-card">
+            <div style="font-weight: bold; margin-bottom: 2px;">💡 核心突破：為什麼「AA 相似」就夠了？</div>
+            <div class="interactive-item" onclick="toggleItemAnswer(this)">
+              因為三角形內角和必為 180°！只要任「<span class="write-blank"><span class="ans-reveal">兩組角對應相等</span></span>」，第三組角必定自動相等，因此簡稱為「AA 相似性質」。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ⓫</span>AA 相似判定與對應點演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 判斷兩三角形是否相似：</div>
+          (1) △ABC (73°, 60°) 與 △DFE (73°, 60°)：<br>
+          答：<span class="write-blank"><span class="ans-reveal">△ABC ∼ △DFE（根據 AA 相似性質）</span></span><br><br>
+          (2) △ABC (85°, 40°) 與 △RQP (85°, 55°)：<br>
+          第三角：180°-85°-55°＝40° ⇒ <br>
+          答：<span class="write-blank"><span class="ans-reveal">△ABC ∼ △RQP（根據 AA 相似性質）</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 依對應點寫出相似三角形（提示：先算第三角）：</div>
+          (1) △ABC (90°, 50°, 40°) ∼ <span class="write-blank"><span class="ans-reveal">△ONM</span></span><br>
+          (2) △DEF (30°, 100°, 50°) ∼ <span class="write-blank"><span class="ans-reveal">△RQP</span></span><br>
+          (3) △GHI (95°, 30°, 55°) ∼ <span class="write-blank"><span class="ans-reveal">△TSU</span></span><br>
+          (4) △PQR (40°, 110°, 30°) ∼ <span class="write-blank"><span class="ans-reveal">△YXZ</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 13 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-14">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❹</span>AAA (AA) 相似練習</div>
+      <span class="badge badge-sub">平行與旋轉共角型 AA 相似</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">(1) 若 DE // BC，則 △ADE 與 △ABC 是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">是（同位角相等，AA 相似）</span></span>
+        </div>
+      </div>
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">(2) 若 ∠AED ＝ ∠B，則 △ADE 與 △ABC 是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">是（∠A 公共角，且 ∠AED＝∠B，AA 相似）</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ⓬</span>AA 相似邊長比例運算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. △ABC 中，AD＝3，AB＝7，DE＝6，且 DE // BC：</div>
+          (1) △ADE 與 △ABC 是否相似？<span class="write-blank"><span class="ans-reveal">是，根據 AA 相似性質</span></span><br>
+          (2) AD 的對應邊是 <span class="write-blank"><span class="ans-reveal">AB</span></span><br>
+          (3) AD : AB ＝ <span class="write-blank"><span class="ans-reveal">3 : 7</span></span><br>
+          (4) DE 的對應邊是 <span class="write-blank"><span class="ans-reveal">BC</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">14</span></span>（6 × 7/3）
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △ABC 中，∠B ＝ ∠AED，AD＝4，AB＝21，AC＝14：</div>
+          (1) △ABC 與 △AED 是否相似？<span class="write-blank"><span class="ans-reveal">是，根據 AA 相似性質</span></span><br>
+          (2) AD 的對應邊是 <span class="write-blank"><span class="ans-reveal">AC</span></span><br>
+          (3) AD : AC ＝ <span class="write-blank"><span class="ans-reveal">4 : 14 ＝ 2 : 7</span></span><br>
+          (4) AB 的對應邊是 <span class="write-blank"><span class="ans-reveal">AE</span></span>，長度為 <span class="write-blank"><span class="ans-reveal">6</span></span>（21 × 2/7）
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 14 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-15">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ⓬ (續)</span>AA 相似經典題型演練</div>
+      <span class="badge badge-sub">直角、平行內錯角與對頂角</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. ∠C ＝ ∠AEF ＝ 90°，EF＝4，AF＝5，BC＝12：</div>
+          (1) △ACB 與 △AEF 是否相似？<span class="write-blank"><span class="ans-reveal">是，AA 相似</span></span><br>
+          (2) EF 對應邊是 <span class="write-blank"><span class="ans-reveal">BC</span></span><br>
+          (3) EF : BC ＝ <span class="write-blank"><span class="ans-reveal">4 : 12 ＝ 1 : 3</span></span><br>
+          (4) AE 對應邊是 <span class="write-blank"><span class="ans-reveal">AC</span></span>，其長度為 <span class="write-blank"><span class="ans-reveal">9</span></span>（3 × 3 ＝ 9）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. AB // DE，AC＝3，CD＝4，BC＝6：</div>
+          (1) △ACB 與 △DCE 是否相似？<span class="write-blank"><span class="ans-reveal">是，AA 相似（內錯角相等）</span></span><br>
+          (2) AC 對應邊是 <span class="write-blank"><span class="ans-reveal">CD</span></span>，AC : CD ＝ <span class="write-blank"><span class="ans-reveal">3 : 4</span></span><br>
+          (3) BC : CE ＝ <span class="write-blank"><span class="ans-reveal">3 : 4</span></span> ⇒ CE ＝ <span class="write-blank"><span class="ans-reveal">8</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">5. ∠A ＝ ∠E，BC＝20，CD＝5，AC＝16：</div>
+          (1) △ABC 與 △EDC 是否相似？<span class="write-blank"><span class="ans-reveal">是，AA 相似（對頂角相等）</span></span><br>
+          (2) BC 對應邊是 <span class="write-blank"><span class="ans-reveal">CD</span></span>，BC : CD ＝ <span class="write-blank"><span class="ans-reveal">20 : 5 ＝ 4 : 1</span></span><br>
+          (3) 求 CE ＝ <span class="write-blank"><span class="ans-reveal">4</span></span>（16 ÷ 4 ＝ 4）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">6. ∠B ＝ ∠E，∠C ＝ ∠F，BC＝36，EF＝24，AF＝8：</div>
+          (1) △ABC 與 △AEF 是否相似？<span class="write-blank"><span class="ans-reveal">是，AA 相似</span></span><br>
+          (2) BC 對應邊是 <span class="write-blank"><span class="ans-reveal">EF</span></span>，BC : EF ＝ <span class="write-blank"><span class="ans-reveal">36 : 24 ＝ 3 : 2</span></span><br>
+          (3) 求 AC ＝ <span class="write-blank"><span class="ans-reveal">12</span></span>（8 × 3/2 ＝ 12）
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 15 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-16">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❾</span>SSS 相似</div>
+      <span class="badge badge-sub">三邊長對應成比例</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="interactive-item" onclick="toggleItemAnswer(this)">
+        ☆ 若 DE 是 AB 的 2 倍，EF 是 BC 的 2 倍，DF 是 AC 的 2 倍。<br>
+        請問：△ABC 與 △DEF 是否相似？<br>
+        答：<span class="write-blank"><span class="ans-reveal">是（三邊成比例放大 2 倍，形狀相同，稱為 SSS 相似）</span></span>
+      </div>
+      <div class="note-card" style="margin-top: 4px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 核心整理：SSS 相似性質</div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          如果一個三角形的 3 個邊都是另一個三角形 3 個邊的 k 倍 ⇒ <span class="write-blank"><span class="ans-reveal">兩三角形相似（SSS 相似）</span></span>。
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ⓭</span>SSS 相似檢核與連比配對</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 判斷下列三角形是否相似：</div>
+          (1) 直角 △ (8, 15, 17) 與 (16, 30, 34)：<br>
+          答：<span class="write-blank"><span class="ans-reveal">△ABC ∼ △DEF（根據 SSS 相似性質，比值皆為 1/2）</span></span><br><br>
+          (2) △ (4, 5, 7) 與 (8, 10, 14)：<br>
+          答：<span class="write-blank"><span class="ans-reveal">△ABC ∼ △DFE（根據 SSS 相似性質，比值皆為 1/2）</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 依對應點寫出相似三角形（提示：化為最簡整數比）：</div>
+          • △ABC 邊長 (8, 10, 12) ⇒ 比為 4 : 5 : 6<br>
+          • △DEF 邊長 (4, 4, 5)<br>
+          • △XYZ 邊長 (4, 6, 8) ⇒ 比為 2 : 3 : 4<br>
+          • △JKL 邊長 (4, 5, 6) ⇒ 比為 4 : 5 : 6<br>
+          • △PQR 邊長 (8, 8, 10) ⇒ 比為 4 : 4 : 5<br>
+          • △STV 邊長 (6, 9, 12) ⇒ 比為 2 : 3 : 4<br><br>
+          (1) △ABC ∼ <span class="write-blank"><span class="ans-reveal">△JLK</span></span><br>
+          (2) △DEF ∼ <span class="write-blank"><span class="ans-reveal">△PRQ</span></span><br>
+          (3) △XYZ ∼ <span class="write-blank"><span class="ans-reveal">△VST</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 16 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-17">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❺</span>SSS 相似練習</div>
+      <span class="badge badge-sub">逐步點擊揭曉解題算式</span>
+    </div>
+
+    <div class="interactive-item" onclick="toggleItemAnswer(this)">
+      <div class="item-title">若一三角形的三邊長分別為 10、20、15，另一三角形的三邊長分別為 14、28、21。請問這兩個三角形是否相似？</div>
+      答：<span class="write-blank"><span class="ans-reveal">是（SSS 相似）</span></span>
+      <div class="calc-workspace">
+        <div class="calc-solution">
+          <div class="calc-step">＝ 將三邊長由小到大排列比對：10 : 15 : 20 ＝ 2 : 3 : 4</div>
+          <div class="calc-step">＝ 另一三角形由小到大排列：14 : 21 : 28 ＝ 2 : 3 : 4</div>
+          <div class="calc-step">＝ 各對應邊比值皆為 10/14 ＝ 15/21 ＝ 20/28 ＝ 5/7 ⇒ 兩三角形相似（SSS 相似）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ⓮</span>SSS 邊長比例運算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. △ABC 與 △DEF 中，若 AB＝2 DE，BC＝2 EF，AC＝2 DF：</div>
+          問這兩個三角形是否相似？根據什麼相似性質？<br>
+          答：<span class="write-blank"><span class="ans-reveal">是，根據 SSS 相似性質</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △ABC 與 △DEF 中，若 AB＝1/3 DE，BC＝1/3 EF，AC＝1/3 DF：</div>
+          問這兩個三角形是否相似？根據什麼相似性質？<br>
+          答：<span class="write-blank"><span class="ans-reveal">是，根據 SSS 相似性質</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 右圖三角形邊長為 4、6、9，試問哪一個會和它相似？</div>
+          (A) 2, 3, 4<br>
+          (B) 5, 10, 6<br>
+          (C) 3, 4, 5<br>
+          (D) 2, 3, 4.5<br>
+          答：<span class="write-blank"><span class="ans-reveal">(D)（2:3:4.5 ＝ 4:6:9，同乘以 2）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 如圖，△ABC 與 △BDC 中，AB＝4，BC＝6，AC＝8，BD＝9，CD＝12：</div>
+          問這兩個三角形是否相似？根據什麼相似性質？<br>
+          答：<span class="write-blank"><span class="ans-reveal">是，根據 SSS 相似性質（4/6 ＝ 6/9 ＝ 8/12 ＝ 2/3）</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 17 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-18">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❿</span>SAS 相似</div>
+      <span class="badge badge-sub">兩邊成比例且夾角相等</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="grid-2col">
+        <div class="col-divider">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ☆ 若 ∠A ＝ ∠D，且 AB : DE ＝ AC : DF<br>
+            請問：△ABC 與 △DEF 是否相似？<br>
+            答：<span class="write-blank"><span class="ans-reveal">是（兩邊成比例且夾角相等，稱為 SAS 相似）</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="note-card" style="background:#fff1f2; border-color:#f43f5e;">
+            <div style="font-weight: bold; color:#e11d48; margin-bottom: 2px;">⚠️ SAS 關鍵注意點</div>
+            <div>相等的角必須是兩比例邊的「夾角」！若為「SSA」則不能保證三角形相似！</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ⓯</span>SAS 相似檢核與配對</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 下圖中這兩個三角形是否相似？根據什麼相似性質？</div>
+          (1) ∠A＝50°，邊 6、9；∠D＝50°，邊 4、6：<br>
+          比值：6/4 ＝ 9/6 ＝ 1.5 ⇒ <br>
+          答：<span class="write-blank"><span class="ans-reveal">△ABC ∼ △DFE（根據 SAS 相似性質）</span></span><br><br>
+          (2) ∠A＝80°，邊 8、12；∠D＝80°，邊 6、9：<br>
+          比值：8/6 ＝ 12/9 ＝ 4/3 ⇒ <br>
+          答：<span class="write-blank"><span class="ans-reveal">△ABC ∼ △DFE（根據 SAS 相似性質）</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 依照對應點分別寫出相似的三角形：</div>
+          • △CAB (夾角 110°，邊長 1、2)<br>
+          • △FED (直角 90°，邊長 4、5)<br>
+          • △GHI (夾角 45°，邊長 3、6，比 1:2)<br>
+          • △MON (直角 90°，邊長 8、10，比 4:5)<br>
+          • △RPQ (夾角 110°，邊長 2、4，比 1:2)<br>
+          • △XZY (夾角 45°，邊長 2、4，比 1:2)<br><br>
+          (1) △CAB ∼ <span class="write-blank"><span class="ans-reveal">△RPQ</span></span><br>
+          (2) △FED ∼ <span class="write-blank"><span class="ans-reveal">△MON</span></span><br>
+          (3) △GHI ∼ <span class="write-blank"><span class="ans-reveal">△XZY</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 18 頁 / 共 19 頁</div>
+  </div>
+
+
+  <div class="page" id="page-19">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-3 相似形</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❻</span>SAS 相似練習</div>
+      <span class="badge badge-sub">對頂角與共角型 SAS 相似</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">(1) 若 AB＝AC＝3，AD＝AE＝5，問 △ABC 與 △ADE 是否相似？</div>
+          答：<span class="write-blank"><span class="ans-reveal">是（對頂角相等，且 AB:AD ＝ AC:AE ＝ 3:5，SAS 相似）</span></span>
+        </div>
+      </div>
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">(2) 若 AB＝6，AC＝4，AD＝2，AE＝3，問 △ABC 與 △ADE 是否相似？BC 和 DE 是否平行？</div>
+          答：<span class="write-blank"><span class="ans-reveal">相似（AC:AD ＝ AB:AE ＝ 2:1，SAS 相似）；平行（內錯角相等）</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ⓰</span>SAS 相似邊長與未知數求解</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 對頂角型 SAS 相似（AC＝12，AE＝8，AD＝4，BC求值）：</div>
+          (1) △ABC 與 △ADE 是否相似？<span class="write-blank"><span class="ans-reveal">是，SAS 相似</span></span><br>
+          (2) AC 對應邊是 <span class="write-blank"><span class="ans-reveal">AE</span></span>，AC : AE ＝ <span class="write-blank"><span class="ans-reveal">12 : 8 ＝ 3 : 2</span></span><br>
+          (3) 若 DE＝7，則 BC ＝ <span class="write-blank"><span class="ans-reveal">10.5</span></span>（7 × 3/2）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 對頂角型 SAS 相似：</div>
+          (1) △ABC 與 △ADE 是否相似？<span class="write-blank"><span class="ans-reveal">是，SAS 相似</span></span><br>
+          (2) AC 對應邊是 <span class="write-blank"><span class="ans-reveal">AD</span></span>，AC : AD ＝ <span class="write-blank"><span class="ans-reveal">4 : 20 ＝ 1 : 5</span></span><br>
+          (3) 求 DE ＝ <span class="write-blank"><span class="ans-reveal">35</span></span>（7 × 5）
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 共角型 SAS 相似（AB＝16，AC＝20）：</div>
+          (1) △ABC 與 △ADE 是否相似？<span class="write-blank"><span class="ans-reveal">是，SAS 相似</span></span><br>
+          (2) AD 對應邊是 <span class="write-blank"><span class="ans-reveal">AB</span></span>，AD : AB ＝ <span class="write-blank"><span class="ans-reveal">4 : 16 ＝ 1 : 4</span></span><br>
+          (3) 求 BC ＝ <span class="write-blank"><span class="ans-reveal">28</span></span>（7 × 4）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. △ABC 與 △AED 中，AB＝4，AC＝5，AD＝20，AE＝16，BC＝28：</div>
+          (1) △ABC 與 △AED 是否相似？<span class="write-blank"><span class="ans-reveal">是，SAS 相似（4/16 ＝ 5/20 ＝ 1/4）</span></span><br>
+          (2) AB 對應邊是 <span class="write-blank"><span class="ans-reveal">AE</span></span>，AB : AE ＝ <span class="write-blank"><span class="ans-reveal">1 : 4</span></span><br>
+          (3) 求 DE ＝ <span class="write-blank"><span class="ans-reveal">112</span></span>（28 × 4）
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 19 頁 / 共 19 頁</div>
+  </div>
+
+  </div>
+
+  <script>
+    // 1. 章節目錄選單
+    function toggleTocMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('tocMenu');
+      menu.classList.toggle('show');
+    }
+    function jumpTo(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('tocMenu').classList.remove('show');
+      }
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('tocMenu');
+      const btn = document.getElementById('tocBtn');
+      if (menu && menu.classList.contains('show')) {
+        if (!menu.contains(e.target) && e.target !== btn) {
+          menu.classList.remove('show');
+        }
+      }
+    });
+
+    // 2. 逐題/逐步顯現答案
+    let isAllAnsShown = false;
+    let isPenMode = false;
+    let currentColor = 'rgba(250, 204, 21, 0.45)';
+    let currentSize = 4;
+
+    function toggleItemAnswer(el) {
+      if (isPenMode) return;
+      const steps = el.querySelectorAll('.calc-step');
+      if (steps.length === 0) {
+        el.classList.toggle('show-one');
+        el.classList.toggle('ans-done');
+        return;
+      }
+      const shownSteps = el.querySelectorAll('.calc-step.show').length;
+      if (shownSteps < steps.length) {
+        steps[shownSteps].classList.add('show');
+        el.classList.add('show-one');
+        if (shownSteps + 1 === steps.length) {
+          el.classList.add('ans-done');
+        }
+      } else {
+        steps.forEach(s => s.classList.remove('show'));
+        el.classList.remove('show-one');
+        el.classList.remove('ans-done');
+      }
+    }
+
+    // 3. 一鍵全開/全隱答案
+    function toggleAllAnswers() {
+      isAllAnsShown = !isAllAnsShown;
+      const btn = document.getElementById('toggleAllAnsBtn');
+      const icon = document.getElementById('ansIcon');
+      const container = document.querySelector('.pages-container');
+      if (isAllAnsShown) {
+        container.classList.add('show-ans');
+        btn.classList.add('active');
+        icon.textContent = '🙈';
+        document.querySelectorAll('.calc-step').forEach(s => s.classList.add('show'));
+      } else {
+        container.classList.remove('show-ans');
+        btn.classList.remove('active');
+        icon.textContent = '👁️';
+        document.querySelectorAll('.interactive-item').forEach(el => {
+          el.classList.remove('show-one', 'ans-done');
+        });
+        document.querySelectorAll('.calc-step').forEach(s => s.classList.remove('show'));
+      }
+    }
+
+    // 4. 畫筆工具
+    function togglePenMode() {
+      isPenMode = !isPenMode;
+      const penBtn = document.getElementById('penBtn');
+      const options = document.getElementById('penOptions');
+      if (isPenMode) {
+        penBtn.classList.add('active');
+        options.style.display = 'inline-flex';
+        document.body.classList.add('pen-mode');
+      } else {
+        penBtn.classList.remove('active');
+        options.style.display = 'none';
+        document.body.classList.remove('pen-mode');
+      }
+    }
+
+    function setPenColor(color, el) {
+      currentColor = color;
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+      el.classList.add('active');
+    }
+    function setPenSize(size, el) {
+      currentSize = size;
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // 5. Canvas 畫布
+    const canvases = [];
+    function initCanvases() {
+      document.querySelectorAll('.page').forEach(page => {
+        const canvas = page.querySelector('.drawing-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        function resize() {
+          const rect = page.getBoundingClientRect();
+          const scale = window.devicePixelRatio || 1;
+          canvas.width = rect.width * scale;
+          canvas.height = rect.height * scale;
+          ctx.scale(scale, scale);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+        function getPos(e) {
+          const rect = canvas.getBoundingClientRect();
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+          }
+          return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+        function startDraw(e) {
+          if (!isPenMode) return;
+          isDrawing = true;
+          const pos = getPos(e);
+          lastX = pos.x; lastY = pos.y;
+        }
+        function draw(e) {
+          if (!isDrawing || !isPenMode) return;
+          const pos = getPos(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = currentColor;
+          ctx.lineWidth = currentSize;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+          lastX = pos.x; lastY = pos.y;
+          e.preventDefault();
+        }
+        function stopDraw() { isDrawing = false; }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        window.addEventListener('touchend', stopDraw);
+        canvases.push({ canvas, ctx });
+      });
+    }
+
+    function clearAllDrawings() {
+      canvases.forEach(({ canvas, ctx }) => {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      });
+    }
+    window.addEventListener('DOMContentLoaded', initCanvases);
+  </script>
+</body>
+</html>
