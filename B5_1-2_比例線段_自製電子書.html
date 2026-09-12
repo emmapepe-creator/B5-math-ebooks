@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B5 1-2 比例線段 — 雙模式教學互動電子書</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f0f7fc;
+      font-family: "Times New Roman", "標楷體", "DFKai-SB", "BiauKai", serif;
+      font-size: 14pt;
+      line-height: 1.42;
+      color: #0f172a;
+      user-select: auto;
+    }
+
+    /* 課堂懸浮工具列 (純 Emoji 極簡膠囊) */
+    .classroom-toolbar {
+      position: fixed;
+      top: 14px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 4px 8px;
+      border-radius: 40px;
+      border: 1px solid rgba(203, 213, 225, 0.9);
+      box-shadow: 0 4px 22px rgba(0, 0, 0, 0.12);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      color: #334155;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      padding: 0;
+      user-select: none;
+    }
+    .tool-btn:hover {
+      background: #f1f5f9;
+      transform: scale(1.1);
+    }
+    .tool-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+    }
+    .btn-toggle-ans.active {
+      background: #eff6ff;
+      border-color: #0284c7;
+    }
+    .toolbar-divider {
+      width: 1px;
+      height: 18px;
+      background: #cbd5e1;
+      margin: 0 3px;
+    }
+
+    /* 目錄跳轉選單 (TOC Floating Menu) */
+    .toc-menu {
+      display: none;
+      position: absolute;
+      top: 46px;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      padding: 6px 0;
+      min-width: 280px;
+      max-height: 440px;
+      overflow-y: auto;
+      z-index: 10000;
+    }
+    .toc-menu.show {
+      display: block;
+      animation: tocFadeIn 0.15s ease-out;
+    }
+    @keyframes tocFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toc-menu-title {
+      padding: 6px 16px 8px 16px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #64748b;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .toc-menu-item {
+      padding: 7px 16px;
+      font-size: 13.5px;
+      color: #334155;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.12s, color 0.12s;
+    }
+    .toc-menu-item:hover {
+      background: #eff6ff;
+      color: #0284c7;
+      font-weight: bold;
+    }
+    .toc-page-badge {
+      font-size: 11.5px;
+      color: #94a3b8;
+      font-weight: normal;
+    }
+    .toc-menu-item:hover .toc-page-badge {
+      color: #0284c7;
+    }
+
+    /* 畫筆設定列 */
+    .pen-options {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      margin-left: 2px;
+    }
+    .color-picker {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .color-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+    .color-dot.active {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 2px #0f172a;
+    }
+    .size-picker {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .size-btn {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #475569;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 7px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .size-btn.active {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+
+    /* A4 頁面容器 */
+    .pages-container {
+      padding: 20px 0 60px 0;
+    }
+    .page {
+      width: 210mm;
+      height: 297mm;
+      min-height: 297mm;
+      max-height: 297mm;
+      padding: 12mm 14mm 10mm 14mm;
+      margin: 0 auto 25px auto;
+      background: #ffffff;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.12);
+      page-break-after: always;
+      break-after: page;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 全頁透明畫布 */
+    .drawing-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 60;
+      pointer-events: none;
+    }
+    body.pen-mode .drawing-canvas {
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+
+    /* 頁首與頁尾 */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+    .main-title {
+      font-size: 16pt;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      color: #0369a1;
+    }
+    .user-info {
+      font-size: 12pt;
+      letter-spacing: 1px;
+      color: #475569;
+    }
+    .page-footer {
+      margin-top: auto;
+      text-align: center;
+      font-size: 11pt;
+      color: #64748b;
+      padding-top: 4px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* 區塊橫幅標題 */
+    .section-banner {
+      font-size: 14pt;
+      font-weight: bold;
+      background: #f0f9ff;
+      border-left: 5px solid #0284c7;
+      padding: 3px 10px;
+      margin: 5px 0 8px 0;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge {
+      display: inline-block;
+      padding: 1px 7px;
+      font-size: 11pt;
+      font-weight: bold;
+      border-radius: 12px;
+      background: #0284c7;
+      color: #fff;
+      margin-right: 6px;
+    }
+    .badge-sub {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    /* 題目互動樣式 */
+    .interactive-item {
+      padding: 3px 6px;
+      border-radius: 5px;
+      transition: background 0.15s;
+      margin-bottom: 4px;
+    }
+    body:not(.pen-mode) .interactive-item {
+      cursor: pointer;
+    }
+    body:not(.pen-mode) .interactive-item:hover {
+      background-color: #f8fafc;
+      outline: 1.5px dashed #93c5fd;
+    }
+    .item-title {
+      font-weight: bold;
+      font-size: 13.5pt;
+      line-height: 1.4;
+    }
+
+    /* 答案顯現樣式 */
+    .ans-reveal {
+      display: inline-block;
+      min-width: 28px;
+      color: transparent;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    .show-ans .ans-reveal,
+    .interactive-item.ans-done .ans-reveal,
+    .interactive-item.show-one .ans-reveal {
+      color: #dc2626 !important;
+    }
+
+    /* 答題寫作底線 */
+    .write-blank {
+      display: inline-block;
+      min-width: 50px;
+      border-bottom: 1.5px solid #334155;
+      text-align: center;
+      padding: 0 4px;
+    }
+
+    /* 雙欄網格 */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 16px;
+      row-gap: 6px;
+    }
+    .col-divider {
+      border-right: 1px solid #cbd5e1;
+      padding-right: 12px;
+    }
+
+    /* 觀念引導盒 */
+    .concept-box {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-size: 13.5pt;
+    }
+
+    /* 筆記與小秘訣盒 */
+    .note-card {
+      background: #fffbeb;
+      border: 1.5px dashed #f59e0b;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 6px;
+      font-size: 13pt;
+    }
+
+    /* 計算留白空間 (3~4行標準細虛線草稿框) */
+    .calc-workspace {
+      min-height: 70px;
+      margin: 4px 0 6px 0;
+      padding: 4px 8px;
+      border: 1.2px dashed #94a3b8;
+      border-radius: 6px;
+      background-color: #fafbfc;
+      position: relative;
+    }
+    .calc-workspace-lg {
+      min-height: 90px;
+    }
+    .calc-solution {
+      font-size: 13pt;
+      line-height: 1.45;
+    }
+    .calc-step {
+      color: transparent;
+      line-height: 1.5;
+      transition: color 0.15s ease;
+      user-select: none;
+    }
+    .calc-step.show,
+    .show-ans .calc-step {
+      color: #dc2626 !important;
+      font-weight: bold;
+    }
+
+    /* 列印專用樣式：還原 100% 白紙卷 */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm 12mm;
+      }
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .no-print,
+      .classroom-toolbar,
+      .toc-menu,
+      .drawing-canvas {
+        display: none !important;
+      }
+      .pages-container {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .page {
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        height: 275mm !important;
+        max-height: 275mm !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        overflow: hidden !important;
+      }
+      .page:last-child {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+      .page-footer {
+        position: static !important;
+        margin-top: auto !important;
+        padding-top: 4px !important;
+        border-top: 1px solid #ccc !important;
+      }
+      .ans-reveal {
+        color: transparent !important;
+      }
+      .calc-workspace {
+        border: 1px dashed #94a3b8 !important;
+        background: transparent !important;
+      }
+      .calc-step {
+        color: transparent !important;
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 課堂極簡 Emoji 膠囊工具列 -->
+  <div class="classroom-toolbar no-print">
+    <!-- 1. 章節目錄 -->
+    <div style="position: relative;">
+      <button class="tool-btn" id="tocBtn" onclick="toggleTocMenu(event)" title="章節目錄導覽">📑</button>
+      <div class="toc-menu" id="tocMenu">
+        <div class="toc-menu-title">📖 單元章節目錄 (P.1 ~ P.12)</div>
+        <div class="toc-menu-item" onclick="jumpTo('page-1')"><span>P.1 概念 ❶ 同底等高的 △ 面積相等</span><span class="toc-page-badge">P.1</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-2')"><span>P.2 概念 ❷ 同高的 △ 面積比</span><span class="toc-page-badge">P.2</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-3')"><span>P.3 例題 ❶ 三角形的面積比</span><span class="toc-page-badge">P.3</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-4')"><span>P.4 概念 ❸ 平行線截比例線段 1</span><span class="toc-page-badge">P.4</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-5')"><span>P.5 概念 ❹ 平行線截比例線段 2</span><span class="toc-page-badge">P.5</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-6')"><span>P.6 概念 ❺ 平行線截比例線段 3</span><span class="toc-page-badge">P.6</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-7')"><span>P.7 概念 ❻ 梯形的比例線段</span><span class="toc-page-badge">P.7</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-8')"><span>P.8 概念 ❼ 比例線段判別平行線</span><span class="toc-page-badge">P.8</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-9')"><span>P.9 概念 ❽ 三角形兩邊中點連線性質</span><span class="toc-page-badge">P.9</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-10')"><span>P.10 例題 ❷ 三角形兩邊中點連線性質</span><span class="toc-page-badge">P.10</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-11')"><span>P.11 概念 ❾ 筆記本的平行線</span><span class="toc-page-badge">P.11</span></div>
+        <div class="toc-menu-item" onclick="jumpTo('page-12')"><span>P.12 例題 ❸ 尺規作圖 2 : 3</span><span class="toc-page-badge">P.12</span></div>
+      </div>
+    </div>
+
+    <!-- 2. 一鍵切換全卷答案 -->
+    <button class="tool-btn btn-toggle-ans" id="toggleAllAnsBtn" onclick="toggleAllAnswers()" title="一鍵全開/全隱答案"><span id="ansIcon">👁️</span></button>
+
+    <!-- 3. 畫筆開關 -->
+    <button class="tool-btn" id="penBtn" onclick="togglePenMode()" title="螢光筆/板書筆">✏️</button>
+
+    <!-- 4. 畫筆選項 -->
+    <div class="pen-options" id="penOptions">
+      <div class="color-picker">
+        <span class="color-dot active" style="background:#facc15;" onclick="setPenColor('rgba(250, 204, 21, 0.45)', this)" title="螢光黃"></span>
+        <span class="color-dot" style="background:#ef4444;" onclick="setPenColor('rgba(239, 68, 68, 0.8)', this)" title="紅筆"></span>
+        <span class="color-dot" style="background:#3b82f6;" onclick="setPenColor('rgba(37, 99, 235, 0.8)', this)" title="藍筆"></span>
+        <span class="color-dot" style="background:#10b981;" onclick="setPenColor('rgba(16, 185, 129, 0.8)', this)" title="綠筆"></span>
+      </div>
+      <div class="sub-divider" style="width:1px; height:14px; background:#cbd5e1; margin:0 2px;"></div>
+      <div class="size-picker">
+        <button class="size-btn active" onclick="setPenSize(4, this)">細</button>
+        <button class="size-btn" onclick="setPenSize(10, this)">中</button>
+        <button class="size-btn" onclick="setPenSize(20, this)">粗</button>
+      </div>
+    </div>
+
+    <!-- 5. 清除筆跡 -->
+    <button class="tool-btn" onclick="clearAllDrawings()" title="清除本卷筆跡">🧹</button>
+
+    <div class="toolbar-divider"></div>
+
+    <!-- 6. 列印 -->
+    <button class="tool-btn" onclick="window.print()" title="列印為學生紙本評量卷">🖨️</button>
+  </div>
+
+  <div class="pages-container">
+
+  <div class="page" id="page-1">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❶</span>同底等高的 △ 面積相等</div>
+      <span class="badge badge-sub">平行線距離處處相等</span>
+    </div>
+
+    <div class="concept-box">
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <div style="flex: 1;">
+          <svg width="250" height="110" viewBox="0 0 250 110">
+            <!-- Parallel lines L and M -->
+            <line x1="20" y1="25" x2="230" y2="25" stroke="#334155" stroke-width="1.5" />
+            <text x="235" y="29" font-size="12" fill="#334155" font-style="italic">L</text>
+            <line x1="20" y1="90" x2="230" y2="90" stroke="#334155" stroke-width="1.5" />
+            <text x="235" y="94" font-size="12" fill="#334155" font-style="italic">M</text>
+            <!-- Triangle ABP -->
+            <polygon points="45,90 145,90 75,25" fill="rgba(56, 189, 248, 0.15)" stroke="#0284c7" stroke-width="1.5" />
+            <!-- Triangle ABR -->
+            <polygon points="45,90 145,90 175,25" fill="rgba(244, 114, 182, 0.12)" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3,3" />
+            <!-- Heights PQ and RS -->
+            <line x1="75" y1="25" x2="75" y2="90" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="2,2" />
+            <rect x="75" y="82" width="8" height="8" fill="none" stroke="#0284c7" stroke-width="1" />
+            <line x1="175" y1="25" x2="175" y2="90" stroke="#e11d48" stroke-width="1.2" stroke-dasharray="2,2" />
+            <rect x="167" y="82" width="8" height="8" fill="none" stroke="#e11d48" stroke-width="1" />
+            <!-- Labels -->
+            <text x="35" y="103" font-size="12" font-weight="bold">A</text>
+            <text x="70" y="103" font-size="11">Q</text>
+            <text x="145" y="103" font-size="12" font-weight="bold">B</text>
+            <text x="175" y="103" font-size="11">S</text>
+            <text x="72" y="18" font-size="12" font-weight="bold" fill="#0284c7">P</text>
+            <text x="175" y="18" font-size="12" font-weight="bold" fill="#e11d48">R</text>
+            <text x="78" y="60" font-size="10" fill="#0284c7">d</text>
+            <text x="178" y="60" font-size="10" fill="#e11d48">h</text>
+          </svg>
+        </div>
+        <div style="flex: 1.6;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            已知：L // M，PQ 和 RS 分別為 △ABP 和 △ABR 的高。<br>
+            請問：<br>
+            (1) PQ 和 RS 是否相等？為什麼？<br>
+            答：<span class="write-blank"><span class="ans-reveal">是（平行線間的距離處處相等）</span></span>
+          </div>
+          <div class="interactive-item" style="margin-top: 4px;" onclick="toggleItemAnswer(this)">
+            (2) △ABP 和 △ABR 面積是否相等？為什麼？<br>
+            答：<span class="write-blank"><span class="ans-reveal">是（同底 AB，且等高 PQ＝RS）</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="note-card" style="margin-top: 5px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 核心整理</div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          因為 L // M 且同底 AB，所以 <span class="write-blank"><span class="ans-reveal">△ABP 面積 ＝ △ABR 面積</span></span>。
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❶</span>等高面積比與梯形分割</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 如圖，L // M，AB ＝ 3，BC ＝ 2</div>
+          求 △ABD 面積 : △BCE 面積 ＝ <span class="write-blank"><span class="ans-reveal">3 : 2</span></span>
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="180" height="75" viewBox="0 0 180 75">
+              <line x1="15" y1="18" x2="165" y2="18" stroke="#334155" stroke-width="1.5" />
+              <line x1="15" y1="65" x2="165" y2="65" stroke="#334155" stroke-width="1.5" />
+              <polygon points="30,65 90,65 60,18" fill="rgba(2, 132, 199, 0.15)" stroke="#0284c7" stroke-width="1.2" />
+              <polygon points="90,65 140,65 110,18" fill="rgba(234, 88, 12, 0.15)" stroke="#ea580c" stroke-width="1.2" />
+              <text x="168" y="22" font-size="11" font-style="italic">L</text>
+              <text x="168" y="69" font-size="11" font-style="italic">M</text>
+              <text x="24" y="74" font-size="11">A</text>
+              <text x="87" y="74" font-size="11">B</text>
+              <text x="142" y="74" font-size="11">C</text>
+              <text x="56" y="14" font-size="11">D</text>
+              <text x="108" y="14" font-size="11">E</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 如圖，L // M，△DAC 面積和 △EAC 面積相等嗎？為什麼？</div>
+          答：<span class="write-blank"><span class="ans-reveal">相等（同底 AC，且高相同）</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 如圖，梯形 ABCD 中，AD // BC，E 是 BC 上一點，且 BE ＝ 5，EC ＝ 2</div>
+          (1) △ABE 面積 : △DEC 面積 ＝ <span class="write-blank"><span class="ans-reveal">5 : 2</span></span><br>
+          (2) 若 △ABE 面積是 10，則 △DEC 面積 ＝ <span class="write-blank"><span class="ans-reveal">4</span></span>
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="170" height="75" viewBox="0 0 170 75">
+              <polygon points="45,18 125,18 150,65 20,65" fill="none" stroke="#334155" stroke-width="1.2" />
+              <polygon points="20,65 105,65 45,18" fill="rgba(2, 132, 199, 0.15)" stroke="#0284c7" stroke-width="1.2" />
+              <polygon points="105,65 150,65 125,18" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1.2" />
+              <text x="40" y="14" font-size="11">A</text>
+              <text x="125" y="14" font-size="11">D</text>
+              <text x="12" y="72" font-size="11">B</text>
+              <text x="103" y="74" font-size="11">E</text>
+              <text x="153" y="72" font-size="11">C</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 如圖，梯形 ABCD 中，AD // BC，若 △ABC 面積 ＝ 15，則 △DBC 面積 ＝ ？</div>
+          答：<span class="write-blank"><span class="ans-reveal">15</span></span>（同底 BC，等高）
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 1 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-2">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❷</span>同高的 △ 面積比</div>
+      <span class="badge badge-sub">面積比等於底邊長之比</span>
+    </div>
+
+    <div class="concept-box">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <div style="flex: 1;">
+          <svg width="220" height="95" viewBox="0 0 220 95">
+            <polygon points="40,15 20,80 190,80" fill="rgba(2, 132, 199, 0.08)" stroke="#334155" stroke-width="1.5" />
+            <line x1="40" y1="15" x2="85" y2="80" stroke="#0284c7" stroke-width="1.5" />
+            <text x="36" y="12" font-size="12" font-weight="bold">A</text>
+            <text x="10" y="85" font-size="12">B</text>
+            <text x="82" y="93" font-size="12" fill="#0284c7" font-weight="bold">P</text>
+            <text x="195" y="85" font-size="12">C</text>
+            <text x="45" y="75" font-size="11" fill="#0284c7">2</text>
+            <text x="130" y="75" font-size="11" fill="#0284c7">3</text>
+          </svg>
+        </div>
+        <div style="flex: 1.6;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            已知：BP : PC ＝ 2 : 3<br>
+            請問：△ABP 面積 : △ACP 面積 ＝ <span class="write-blank"><span class="ans-reveal">2 : 3</span></span>
+          </div>
+          <div class="note-card" style="margin-top: 4px;">
+            <div style="font-weight: bold; margin-bottom: 2px;">💡 核心整理</div>
+            <div class="interactive-item" onclick="toggleItemAnswer(this)">
+              若兩三角形高相同，則其 <span class="write-blank"><span class="ans-reveal">面積比 ＝ 底邊長之比</span></span>。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❷</span>同高面積比演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. △ABC 中，P 是 BC 上一點，若 BP ＝ 5，CP ＝ 2：</div>
+          (1) 畫出 △ABC 中 BC 上的高。<br>
+          (2) △ABP 面積 : △ACP 面積 ＝ <span class="write-blank"><span class="ans-reveal">5 : 2</span></span><br>
+          (3) △ABP 面積 : △ABC 面積 ＝ <span class="write-blank"><span class="ans-reveal">5 : 7</span></span><br>
+          (4) 若 △ABP 面積 ＝ 20，則 △ACP 面積 ＝ <span class="write-blank"><span class="ans-reveal">8</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △ABC 中，D 是 BC 上一點，若 BD ＝ 3，CD ＝ 5：</div>
+          (1) △ABD 面積 : △ACD 面積 ＝ <span class="write-blank"><span class="ans-reveal">3 : 5</span></span><br>
+          (2) △ABD 面積 : △ABC 面積 ＝ <span class="write-blank"><span class="ans-reveal">3 : 8</span></span><br>
+          (3) 若 △ABD 面積 ＝ 9，則 △ACD 面積 ＝ <span class="write-blank"><span class="ans-reveal">15</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. △DBC 中，P 是 BC 上一點，A 是 DC 上一點，若 BP ＝ 4，CP ＝ 3：</div>
+          (1) △ABP 面積 : △ACP 面積 ＝ <span class="write-blank"><span class="ans-reveal">4 : 3</span></span><br>
+          (2) 若 △ABP 面積 ＝ 20，則 △ACP 面積 ＝ <span class="write-blank"><span class="ans-reveal">15</span></span>
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="180" height="70" viewBox="0 0 180 70">
+              <polygon points="90,10 20,60 160,60" fill="none" stroke="#334155" stroke-width="1.2" />
+              <line x1="90" y1="10" x2="80" y2="60" stroke="#334155" stroke-width="1.2" />
+              <line x1="130" y1="32" x2="80" y2="60" stroke="#0284c7" stroke-width="1.2" />
+              <text x="88" y="8" font-size="10">D</text>
+              <text x="135" y="32" font-size="10">A</text>
+              <text x="12" y="65" font-size="10">B</text>
+              <text x="78" y="69" font-size="10">P</text>
+              <text x="165" y="65" font-size="10">C</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. △ABC 中，D 是 BC 上一點，E 是 AB 上一點，若 CD ＝ 2，DB ＝ 3：</div>
+          (1) △ECD 面積 : △EDB 面積 ＝ <span class="write-blank"><span class="ans-reveal">2 : 3</span></span><br>
+          (2) 若 △ECD 面積 ＝ 12，則 △EDB 面積 ＝ <span class="write-blank"><span class="ans-reveal">18</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 2 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-3">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❶</span>三角形的面積比</div>
+      <span class="badge badge-sub">等高與共底面積探討</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">(1) 已知：M // N，△PQA 面積是 a，△PQB 面積是 b，△PQC 面積是 c。請比較 a, b, c 的大小？</div>
+          答：<span class="write-blank"><span class="ans-reveal">a ＝ b ＝ c</span></span>
+          <div class="calc-workspace">
+            <div class="calc-solution">
+              <div class="calc-step">＝ 底邊皆為 PQ，高皆為平行線 M 與 N 間的距離</div>
+              <div class="calc-step">＝ 同底等高 ⇒ 面積 a ＝ b ＝ c</div>
+            </div>
+          </div>
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="180" height="75" viewBox="0 0 180 75">
+              <line x1="15" y1="18" x2="165" y2="18" stroke="#334155" stroke-width="1.5" />
+              <line x1="15" y1="65" x2="165" y2="65" stroke="#334155" stroke-width="1.5" />
+              <line x1="60" y1="65" x2="35" y2="18" stroke="#0284c7" stroke-width="1.2" />
+              <line x1="120" y1="65" x2="35" y2="18" stroke="#0284c7" stroke-width="1.2" />
+              <line x1="60" y1="65" x2="90" y2="18" stroke="#16a34a" stroke-width="1.2" />
+              <line x1="120" y1="65" x2="90" y2="18" stroke="#16a34a" stroke-width="1.2" />
+              <line x1="60" y1="65" x2="145" y2="18" stroke="#ea580c" stroke-width="1.2" />
+              <line x1="120" y1="65" x2="145" y2="18" stroke="#ea580c" stroke-width="1.2" />
+              <text x="168" y="22" font-size="11">M</text>
+              <text x="168" y="69" font-size="11">N</text>
+              <text x="32" y="14" font-size="11">A</text>
+              <text x="88" y="14" font-size="11">B</text>
+              <text x="145" y="14" font-size="11">C</text>
+              <text x="55" y="74" font-size="11">P</text>
+              <text x="118" y="74" font-size="11">Q</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">(2) 已知：AD ＝ 6，CD ＝ 12。求 △ABD 和 △BCD 的面積比？</div>
+          答：<span class="write-blank"><span class="ans-reveal">1 : 2</span></span>
+          <div class="calc-workspace">
+            <div class="calc-solution">
+              <div class="calc-step">＝ 頂點皆為 B，底邊在同一直線上（等高）</div>
+              <div class="calc-step">＝ △ABD 面積 : △BCD 面積 ＝ 6 : 12 ＝ 1 : 2</div>
+            </div>
+          </div>
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="180" height="75" viewBox="0 0 180 75">
+              <polygon points="120,15 20,70 160,55" fill="none" stroke="#334155" stroke-width="1.2" />
+              <line x1="120" y1="15" x2="80" y2="62" stroke="#0284c7" stroke-width="1.2" />
+              <text x="120" y="12" font-size="11">A</text>
+              <text x="75" y="72" font-size="11">D</text>
+              <text x="12" y="75" font-size="11">C</text>
+              <text x="165" y="58" font-size="11">B</text>
+              <text x="95" y="42" font-size="10" fill="#0284c7">6</text>
+              <text x="45" y="62" font-size="10" fill="#0284c7">12</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ❸</span>面積比較演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. L // M，若 DE ＝ FG ＝ HI ＝ 2：</div>
+          △ADE、△BFG、△CHI 的面積關係？<br>
+          答：<span class="write-blank"><span class="ans-reveal">△ADE ＝ △BFG ＝ △CHI（等底等高）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. L // M，則 △ADE、△BDE、△CDE 的面積關係？</div>
+          答：<span class="write-blank"><span class="ans-reveal">△ADE ＝ △BDE ＝ △CDE（同底等高）</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. L // M，若 △ADE 是 10，則 △BDE、△CDE 面積為何？</div>
+          答：<span class="write-blank"><span class="ans-reveal">皆為 10</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 已知 AD ＝ 3，CD ＝ 4：</div>
+          (1) 畫出 △ABC 中以 AC 為底邊的高。<br>
+          (2) △BAD 面積 : △BCD 面積 ＝ <span class="write-blank"><span class="ans-reveal">3 : 4</span></span><br>
+          (3) △BAD 面積 : △BAC 面積 ＝ <span class="write-blank"><span class="ans-reveal">3 : 7</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">5. 已知 AD ＝ 1，CD ＝ 5：</div>
+          (1) △BAD 面積 : △BCD 面積 ＝ <span class="write-blank"><span class="ans-reveal">1 : 5</span></span><br>
+          (2) △BAD 面積 : △BAC 面積 ＝ <span class="write-blank"><span class="ans-reveal">1 : 6</span></span><br>
+          (3) 若 △ABC 面積 ＝ 30，則 △ABD 面積 ＝ <span class="write-blank"><span class="ans-reveal">5</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 3 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-4">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❸</span>平行線截比例線段 1</div>
+      <span class="badge badge-sub">上比下 ＝ 上比下</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="grid-2col">
+        <div class="col-divider">
+          <div style="font-weight: bold; margin-bottom: 2px;">☆ 比例線段定義</div>
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ❶ 2 : 3 ＝ 4 : 6 ⇒ 我們說 2, 3, 4, 6 <span class="write-blank"><span class="ans-reveal">成比例</span></span>。
+          </div>
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ❷ 若 a : b ＝ c : d ⇒ 我們說 a, b, c, d <span class="write-blank"><span class="ans-reveal">成比例</span></span>。
+          </div>
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ❸ 若 AB : CD ＝ EF : GH ⇒ 我們說 AB, CD, EF, GH <span class="write-blank"><span class="ans-reveal">成比例線段</span></span>。
+          </div>
+        </div>
+
+        <div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <svg width="100" height="90" viewBox="0 0 100 90">
+              <polygon points="50,10 15,80 85,80" fill="none" stroke="#334155" stroke-width="1.5" />
+              <line x1="33" y1="45" x2="67" y2="45" stroke="#0284c7" stroke-width="1.5" />
+              <text x="48" y="8" font-size="10">A</text>
+              <text x="23" y="47" font-size="10" fill="#0284c7">B</text>
+              <text x="70" y="47" font-size="10" fill="#0284c7">D</text>
+              <text x="6" y="84" font-size="10">C</text>
+              <text x="88" y="84" font-size="10">E</text>
+            </svg>
+            <div style="font-size: 13pt;">
+              <div class="interactive-item" onclick="toggleItemAnswer(this)">
+                若 BD // CE，AB : BC ＝ 2 : 3<br>
+                則 AD : DE ＝ <span class="write-blank"><span class="ans-reveal">2 : 3</span></span>
+              </div>
+              <div class="interactive-item" onclick="toggleItemAnswer(this)">
+                即：<span class="write-blank"><span class="ans-reveal">AB : BC ＝ AD : DE</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❹</span>平行截比例線段運算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. △ABC 中，PQ // BC，若 AP : PB ＝ 1 : 4：</div>
+          (1) AQ : QC ＝ <span class="write-blank"><span class="ans-reveal">1 : 4</span></span><br>
+          (2) 若 AQ ＝ 6，則 QC ＝ <span class="write-blank"><span class="ans-reveal">24</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △ABC 中，PQ // BC，若 AP : PB ＝ 2 : 3：</div>
+          (1) AQ : QC ＝ <span class="write-blank"><span class="ans-reveal">2 : 3</span></span><br>
+          (2) 若 AQ ＝ 6，則 QC ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. △ABC 中，PQ // BC，若 AP ＝ 3，PB ＝ 12：</div>
+          (1) AQ : QC ＝ <span class="write-blank"><span class="ans-reveal">1 : 4</span></span><br>
+          (2) 若 AQ ＝ 4，則 QC ＝ <span class="write-blank"><span class="ans-reveal">16</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. △ABC 中，PQ // BC，若 AP ＝ 10，PB ＝ 15：</div>
+          若 AQ ＝ 8，求 QC ＝ <span class="write-blank"><span class="ans-reveal">12</span></span>
+          <div class="calc-workspace">
+            <div class="calc-solution">
+              <div class="calc-step">＝ 10 / 15 ＝ 8 / QC</div>
+              <div class="calc-step">＝ 2 / 3 ＝ 8 / QC ⇒ 2 × QC ＝ 24 ⇒ QC ＝ 12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 4 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-5">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❹</span>平行線截比例線段 2（部分與全體比）</div>
+      <span class="badge badge-sub">上比全 ＝ 上比全</span>
+    </div>
+
+    <div class="concept-box">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <svg width="110" height="95" viewBox="0 0 110 95">
+          <polygon points="55,10 15,85 95,85" fill="none" stroke="#334155" stroke-width="1.5" />
+          <line x1="35" y1="48" x2="75" y2="48" stroke="#0284c7" stroke-width="1.5" />
+          <text x="52" y="8" font-size="11">A</text>
+          <text x="24" y="50" font-size="11" fill="#0284c7">B</text>
+          <text x="78" y="50" font-size="11" fill="#0284c7">D</text>
+          <text x="5" y="89" font-size="11">C</text>
+          <text x="98" y="89" font-size="11">E</text>
+        </svg>
+        <div style="flex: 1;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            已知 BD // CE，AB : BC ＝ AD : DE ＝ 2 : 3<br>
+            ❶ AB : AC ＝ <span class="write-blank"><span class="ans-reveal">2 : 5</span></span>，AD : AE ＝ <span class="write-blank"><span class="ans-reveal">2 : 5</span></span> ⇒ <span class="write-blank"><span class="ans-reveal">AB : AC ＝ AD : AE</span></span><br>
+            ❷ CB : CA ＝ <span class="write-blank"><span class="ans-reveal">3 : 5</span></span>，ED : EA ＝ <span class="write-blank"><span class="ans-reveal">3 : 5</span></span> ⇒ <span class="write-blank"><span class="ans-reveal">CB : CA ＝ ED : EA</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="note-card" style="margin-top: 4px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 核心整理：平行線截比例線段性質 1、2</div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          • 上比下 ＝ 上比下（AB : BC ＝ AD : DE）<br>
+          • 上比全 ＝ 上比全（AB : AC ＝ AD : AE）<br>
+          • 下比全 ＝ 下比全（BC : AC ＝ DE : AE）
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❺</span>部分與全體比演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. △ABC 中，DE // BC，若 AD : AB ＝ 1 : 5：</div>
+          (1) AE : AC ＝ <span class="write-blank"><span class="ans-reveal">1 : 5</span></span><br>
+          (2) 若 AE ＝ 5，則 AC ＝ <span class="write-blank"><span class="ans-reveal">25</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △ABC 中，DE // BC，若 AD ＝ 4，AB ＝ 8：</div>
+          (1) AE : AC ＝ <span class="write-blank"><span class="ans-reveal">1 : 2</span></span><br>
+          (2) 若 AE ＝ 5，則 AC ＝ <span class="write-blank"><span class="ans-reveal">10</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. △ABC 中，DE // BC，若 DB : AB ＝ 4 : 5：</div>
+          (1) EC : AC ＝ <span class="write-blank"><span class="ans-reveal">4 : 5</span></span><br>
+          (2) 若 EC ＝ 12，則 AC ＝ <span class="write-blank"><span class="ans-reveal">15</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. △ABC 中，DE // BC，若 DB ＝ 25，AB ＝ 35：</div>
+          (1) EC : AC ＝ <span class="write-blank"><span class="ans-reveal">5 : 7</span></span><br>
+          (2) 若 AE ＝ 20，則 AC ＝ <span class="write-blank"><span class="ans-reveal">70</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 5 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-6">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❺</span>平行線截比例線段 3（截底邊比）</div>
+      <span class="badge badge-sub">平行底邊比 ＝ 上比全</span>
+    </div>
+
+    <div class="concept-box">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <svg width="110" height="95" viewBox="0 0 110 95">
+          <polygon points="55,10 15,85 95,85" fill="none" stroke="#334155" stroke-width="1.5" />
+          <line x1="35" y1="48" x2="75" y2="48" stroke="#0284c7" stroke-width="1.5" />
+          <text x="52" y="8" font-size="11">A</text>
+          <text x="24" y="50" font-size="11" fill="#0284c7">B</text>
+          <text x="78" y="50" font-size="11" fill="#0284c7">D</text>
+          <text x="5" y="89" font-size="11">C</text>
+          <text x="98" y="89" font-size="11">E</text>
+        </svg>
+        <div style="flex: 1;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            已知 BD // CE，AB : BC ＝ 2 : 3，我們從前面性質可知：<br>
+            ❶ AD : DE ＝ <span class="write-blank"><span class="ans-reveal">2 : 3</span></span><br>
+            ❷ BC : AC ＝ <span class="write-blank"><span class="ans-reveal">3 : 5</span></span><br>
+            ❸ AB : AC ＝ <span class="write-blank"><span class="ans-reveal">2 : 5</span></span><br>
+            請猜猜看 BD : CE ＝ <span class="write-blank"><span class="ans-reveal">2 : 5</span></span>（為什麼？因為 △ABD ~ △ACE，底邊比等於側邊的上比全！）
+          </div>
+        </div>
+      </div>
+      <div class="note-card" style="margin-top: 4px; background:#fff1f2; border-color:#f43f5e;">
+        <div style="font-weight: bold; color:#e11d48; margin-bottom: 2px;">⚠️ 極重要易錯觀念防雷卡</div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          截底邊之比「<span class="write-blank"><span class="ans-reveal">BD : CE ＝ AB : AC ＝ AD : AE</span></span>」（上比全）。<br>
+          ❌ 絕對不可寫成「上比下」（BD : CE ≠ AB : BC），務必特別注意！
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❻</span>平行截底邊比運算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. △ABC 中，DE // BC，若 AD : AB ＝ 1 : 5：</div>
+          (1) DE : BC ＝ <span class="write-blank"><span class="ans-reveal">1 : 5</span></span><br>
+          (2) 若 DE ＝ 9，則 BC ＝ <span class="write-blank"><span class="ans-reveal">45</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △ABC 中，DE // BC，若 AE : AC ＝ 3 : 7：</div>
+          (1) DE : BC ＝ <span class="write-blank"><span class="ans-reveal">3 : 7</span></span><br>
+          (2) 若 DE ＝ 6，則 BC ＝ <span class="write-blank"><span class="ans-reveal">14</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. △ABC 中，DE // BC，若 AD ＝ 6，AB ＝ 24：</div>
+          (1) 若 AE ＝ 4，則 AC ＝ <span class="write-blank"><span class="ans-reveal">16</span></span><br>
+          (2) 若 DE ＝ 5，則 BC ＝ <span class="write-blank"><span class="ans-reveal">20</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. △ABC 中，DE // BC，且 AE ＝ 21，EC ＝ 28：</div>
+          (1) 若 AD ＝ 27，則 AB ＝ <span class="write-blank"><span class="ans-reveal">63</span></span><br>
+          (2) 若 DE ＝ 24，則 BC ＝ <span class="write-blank"><span class="ans-reveal">56</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 6 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-7">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❻</span>梯形的比例線段</div>
+      <span class="badge badge-sub">平行線截線定理</span>
+    </div>
+
+    <div class="concept-box">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <svg width="130" height="95" viewBox="0 0 130 95">
+          <polygon points="40,15 100,15 115,85 20,85" fill="none" stroke="#334155" stroke-width="1.5" />
+          <line x1="30" y1="50" x2="108" y2="50" stroke="#0284c7" stroke-width="1.5" />
+          <text x="35" y="12" font-size="11">A</text>
+          <text x="103" y="12" font-size="11">P</text>
+          <text x="18" y="53" font-size="11" fill="#0284c7">B</text>
+          <text x="112" y="53" font-size="11" fill="#0284c7">Q</text>
+          <text x="10" y="89" font-size="11">C</text>
+          <text x="118" y="89" font-size="11">R</text>
+        </svg>
+        <div style="flex: 1;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            如左圖，在梯形 ACPR 中，已知 AP // BQ // CR，AB : BC ＝ 2 : 3<br>
+            請問 PQ : QR ＝ <span class="write-blank"><span class="ans-reveal">2 : 3</span></span>（為什麼？三平行線截兩直線，所截得之對應線段成比例！）
+          </div>
+        </div>
+      </div>
+      <div class="note-card" style="margin-top: 4px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 核心整理：平行線截線定理</div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          • 若 AP // BQ // CR ⇒ <span class="write-blank"><span class="ans-reveal">AB : BC ＝ PQ : QR</span></span><br>
+          • 若 L // M // N ⇒ <span class="write-blank"><span class="ans-reveal">AB : BC ＝ DE : EF</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❼</span>梯形截比例線段運算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 梯形 ABCD 中，AD // PQ // BC，若 AP : PB ＝ 3 : 5：</div>
+          (1) DQ : QC ＝ <span class="write-blank"><span class="ans-reveal">3 : 5</span></span><br>
+          (2) 若 DC ＝ 24，則 DQ ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>，QC ＝ <span class="write-blank"><span class="ans-reveal">15</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 梯形 ABCD 中，AD // PQ // BC，若 AP : AB ＝ 3 : 7：</div>
+          (1) DQ : DC ＝ <span class="write-blank"><span class="ans-reveal">3 : 7</span></span><br>
+          (2) 若 DC ＝ 49，則 DQ ＝ <span class="write-blank"><span class="ans-reveal">21</span></span>，QC ＝ <span class="write-blank"><span class="ans-reveal">28</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. L // M // N，若 AB ＝ 21，BC ＝ 12，且 DF ＝ 44：</div>
+          求 DE ＝ <span class="write-blank"><span class="ans-reveal">28</span></span>，EF ＝ <span class="write-blank"><span class="ans-reveal">16</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. L // M // N，若 AB ＝ 15，AC ＝ 40，且 DF ＝ 48：</div>
+          求 DE ＝ <span class="write-blank"><span class="ans-reveal">18</span></span>，EF ＝ <span class="write-blank"><span class="ans-reveal">30</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">5. L // M // N，若 DE ＝ 16，DF ＝ 28，且 AC ＝ 56：</div>
+          求 AB ＝ <span class="write-blank"><span class="ans-reveal">32</span></span>，BC ＝ <span class="write-blank"><span class="ans-reveal">24</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 7 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-8">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❼</span>比例線段判別平行線</div>
+      <span class="badge badge-sub">平行截線之逆定理與防雷</span>
+    </div>
+
+    <div class="concept-box">
+      <div class="grid-2col">
+        <div class="col-divider">
+          <div style="font-weight: bold; margin-bottom: 2px;">☆ 逆定理判別</div>
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            (1) 若 BD // CE ⇒ AB : BC ＝ AD : DE<br>
+            (2) 若 AB : BC ＝ AD : DE ⇒ <span class="write-blank"><span class="ans-reveal">BD // CE</span></span>
+          </div>
+          <div class="interactive-item" style="margin-top: 4px;" onclick="toggleItemAnswer(this)">
+            〈例〉如果 AB ＝ 2，AD ＝ 3，AC ＝ 3，AE ＝ 4.5。<br>
+            請問 BD 和 CE 是否平行？<br>
+            答：<span class="write-blank"><span class="ans-reveal">是（2/3 ＝ 3/4.5 ＝ 2/3）</span></span>
+          </div>
+        </div>
+
+        <div>
+          <div class="note-card" style="background:#fff1f2; border-color:#f43f5e;">
+            <div style="font-weight: bold; color:#e11d48; margin-bottom: 2px;">⚠️ 思考辨析防雷卡</div>
+            <div class="interactive-item" onclick="toggleItemAnswer(this)">
+              (1) 如果 BD // CE ⇒ AB : AC ＝ BD : CE<br>
+              (2) 如果 AB : AC ＝ BD : CE，BD 和 CE 會平行嗎？<br>
+              答：<span class="write-blank"><span class="ans-reveal">不一定（底邊比相等不能判定平行，SSA 不一定全等或相似）</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❽</span>平行線判別運算</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. △ABC 中，D、E 分別在 AB、AC 上：</div>
+          (1) 若 AD ＝ 4，DB ＝ 6，AE ＝ 6，EC ＝ 9：<br>
+          則 DE 和 BC 是否平行？<span class="write-blank"><span class="ans-reveal">是（4/6 ＝ 6/9 ＝ 2/3）</span></span><br>
+          (2) 若 AD ＝ 15，AB ＝ 27，AE ＝ 20，AC ＝ 35：<br>
+          則 DE 和 BC 是否平行？<span class="write-blank"><span class="ans-reveal">否（15/27 ≠ 20/35）</span></span><br>
+          (3) 若 AD ＝ 6，AB ＝ 14，DE ＝ 9，BC ＝ 21：<br>
+          則 DE 和 BC 是否平行？<span class="write-blank"><span class="ans-reveal">不一定（底邊比相等無法作為平行充分條件）</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. △ABC 中，D、E 在 AB、AC 上，若使 DE // BC：</div>
+          (1) 若 AD : DB ＝ 3 : 2，EC ＝ 6，則 AE ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>。<br>
+          (2) 若 AD : AB ＝ 4 : 9，AC ＝ 27，則 AE ＝ <span class="write-blank"><span class="ans-reveal">12</span></span>。<br>
+          (3) 若 AB : DB ＝ 8 : 3，AC ＝ 32，則 EC ＝ <span class="write-blank"><span class="ans-reveal">12</span></span>。
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 8 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-9">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❽</span>三角形兩邊中點連線性質</div>
+      <span class="badge badge-sub">平行且長度為底邊一半</span>
+    </div>
+
+    <div class="concept-box">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <svg width="120" height="90" viewBox="0 0 120 90">
+          <polygon points="60,10 15,80 105,80" fill="none" stroke="#334155" stroke-width="1.5" />
+          <line x1="37.5" y1="45" x2="82.5" y2="45" stroke="#0284c7" stroke-width="1.5" />
+          <!-- Midpoint ticks -->
+          <line x1="46" y1="26" x2="52" y2="28" stroke="#0284c7" stroke-width="1" />
+          <line x1="24" y1="61" x2="30" y2="63" stroke="#0284c7" stroke-width="1" />
+          <line x1="68" y1="28" x2="74" y2="26" stroke="#0284c7" stroke-width="1" />
+          <line x1="90" y1="63" x2="96" y2="61" stroke="#0284c7" stroke-width="1" />
+          <text x="57" y="8" font-size="11">A</text>
+          <text x="25" y="47" font-size="11" fill="#0284c7">D</text>
+          <text x="86" y="47" font-size="11" fill="#0284c7">E</text>
+          <text x="5" y="84" font-size="11">B</text>
+          <text x="108" y="84" font-size="11">C</text>
+        </svg>
+        <div style="flex: 1;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            ☆ 在 △ABC 中，如果 D 是 AB 的中點，E 是 AC 的中點，DE 稱為<span class="write-blank"><span class="ans-reveal">兩邊中點連線</span></span>。<br>
+            說明性質：(1) <span class="write-blank"><span class="ans-reveal">DE // BC</span></span>　(2) <span class="write-blank"><span class="ans-reveal">DE ＝ 1/2 BC</span></span>
+          </div>
+          <div class="interactive-item" style="margin-top: 4px;" onclick="toggleItemAnswer(this)">
+            〈例〉已知 AD ＝ DB，AE ＝ EC，∠ADE ＝ 57°，BC ＝ 10。<br>
+            求：(1) ∠B ＝ <span class="write-blank"><span class="ans-reveal">57°</span></span>（同位角相等）　(2) DE ＝ <span class="write-blank"><span class="ans-reveal">5</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ❾</span>中點連線性質演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. AP ＝ PB，AQ ＝ QC，∠APQ ＝ 55°，BC ＝ 12：</div>
+          (1) ∠ABC ＝ <span class="write-blank"><span class="ans-reveal">55°</span></span><br>
+          (2) PQ ＝ <span class="write-blank"><span class="ans-reveal">6</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. D、E 是 AB 和 AC 的中點，∠ADE ＝ 32°，AB ＝ 12，BC ＝ 18：</div>
+          (1) ∠ABC ＝ <span class="write-blank"><span class="ans-reveal">32°</span></span><br>
+          (2) AD ＝ <span class="write-blank"><span class="ans-reveal">6</span></span><br>
+          (3) DE ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. D、E 是 AB 和 AC 的中點，∠AED ＝ 72°，AD ＝ 6，DE ＝ 10：</div>
+          (1) ∠ACB ＝ <span class="write-blank"><span class="ans-reveal">72°</span></span><br>
+          (2) AB ＝ <span class="write-blank"><span class="ans-reveal">12</span></span><br>
+          (3) BC ＝ <span class="write-blank"><span class="ans-reveal">20</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. D、E 是 AB 和 AC 的中點，∠B ＝ 75°，AD ＝ 10，DE ＝ 11：</div>
+          (1) ∠ADE ＝ <span class="write-blank"><span class="ans-reveal">75°</span></span><br>
+          (2) AB ＝ <span class="write-blank"><span class="ans-reveal">20</span></span><br>
+          (3) BC ＝ <span class="write-blank"><span class="ans-reveal">22</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 9 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-10">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❷</span>三角形兩邊中點連線性質（中點三角形周長）</div>
+      <span class="badge badge-sub">逐步點擊揭曉解題算式</span>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">在 △ABC 中，如果 D、E、F 分別是 AB、BC、AC 的中點。<br>已知：AB ＝ 6，AC ＝ 7，BC ＝ 5。求 △DEF 周長 ＝ <span class="write-blank"><span class="ans-reveal">9</span></span>。</div>
+          <div class="calc-workspace">
+            <div class="calc-solution">
+              <div class="calc-step">＝ 中點連線長分別為對應邊長的一半</div>
+              <div class="calc-step">＝ DE ＝ 7/2 ＝ 3.5，EF ＝ 6/2 ＝ 3，DF ＝ 5/2 ＝ 2.5</div>
+              <div class="calc-step">＝ △DEF 周長 ＝ 3.5 + 3 + 2.5 ＝ 9（或 (6+7+5) ÷ 2 ＝ 9）</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="text-align: center; margin-top: 10px;">
+          <svg width="150" height="115" viewBox="0 0 150 115">
+            <polygon points="75,10 15,100 135,100" fill="none" stroke="#334155" stroke-width="1.5" />
+            <polygon points="45,55 105,55 75,100" fill="rgba(2, 132, 199, 0.2)" stroke="#0284c7" stroke-width="1.5" />
+            <text x="72" y="8" font-size="11">A</text>
+            <text x="32" y="58" font-size="11" fill="#0284c7">D</text>
+            <text x="110" y="58" font-size="11" fill="#0284c7">F</text>
+            <text x="5" y="104" font-size="11">B</text>
+            <text x="72" y="112" font-size="11" fill="#0284c7">E</text>
+            <text x="140" y="104" font-size="11">C</text>
+          </svg>
+        </div>
+        <div class="note-card" style="margin-top: 5px;">
+          <div style="font-weight: bold; margin-bottom: 2px;">💡 核心口訣</div>
+          <div>中點三角形各邊長為原三角形之一半，故「中點三角形周長 ＝ 原三角形周長 × 1/2」！</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ❿</span>中點三角形周長演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. D、E、F 分別為 AB、AC、BC 中點，AB ＝ 7，BC ＝ 8，AC ＝ 9：</div>
+          (1) △ABC 周長 ＝ <span class="write-blank"><span class="ans-reveal">24</span></span>（7 + 8 + 9 ＝ 24）<br>
+          (2) △DEF 周長 ＝ <span class="write-blank"><span class="ans-reveal">12</span></span>（24 ÷ 2 ＝ 12）
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. D、E、F 分別為 AB、AC、BC 中點，AB ＝ AC ＝ 8，BC ＝ 10：</div>
+          (1) △ABC 周長 ＝ <span class="write-blank"><span class="ans-reveal">26</span></span><br>
+          (2) △DEF 周長 ＝ <span class="write-blank"><span class="ans-reveal">13</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 8px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. D、E、F 分別為中點，DE ＝ 4，DF ＝ 5，EF ＝ 6：</div>
+          (1) △DEF 周長 ＝ <span class="write-blank"><span class="ans-reveal">15</span></span><br>
+          (2) △ABC 周長 ＝ <span class="write-blank"><span class="ans-reveal">30</span></span><br>
+          (3) △DEF 周長是 △ABC 周長的 <span class="write-blank"><span class="ans-reveal">1/2</span></span> 倍
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. D、E、F 分別為中點，DF ＝ 5，EF ＝ 6，DE ＝ 7：</div>
+          (1) △ABC 周長 ＝ <span class="write-blank"><span class="ans-reveal">36</span></span><br>
+          (2) △ADE 周長 ＝ <span class="write-blank"><span class="ans-reveal">18</span></span><br>
+          (3) △DEF 周長是 △ABC 周長的 <span class="write-blank"><span class="ans-reveal">1/2</span></span> 倍
+        </div>
+
+        <div class="interactive-item" style="margin-top: 10px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">5. D、E、F 為三邊中點，若 △ABC 周長是 28：</div>
+          求 △DEF 周長 ＝ <span class="write-blank"><span class="ans-reveal">14</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 10 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-11">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">概念 ❾</span>筆記本的平行線</div>
+      <span class="badge badge-sub">等距離平行線截線段</span>
+    </div>
+
+    <div class="concept-box">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <div style="flex: 1; text-align: center;">
+          <svg width="220" height="110" viewBox="0 0 220 110">
+            <!-- Notebook horizontal lines -->
+            <line x1="20" y1="15" x2="200" y2="15" stroke="#cbd5e1" stroke-width="1.2" />
+            <line x1="20" y1="35" x2="200" y2="35" stroke="#cbd5e1" stroke-width="1.2" />
+            <line x1="20" y1="55" x2="200" y2="55" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3,3" />
+            <line x1="20" y1="75" x2="200" y2="75" stroke="#cbd5e1" stroke-width="1.2" />
+            <line x1="20" y1="95" x2="200" y2="95" stroke="#cbd5e1" stroke-width="1.2" />
+            <!-- Line AB -->
+            <line x1="140" y1="15" x2="60" y2="95" stroke="#334155" stroke-width="2" />
+            <!-- Point A, B, C -->
+            <circle cx="140" cy="15" r="3.5" fill="#334155" />
+            <circle cx="60" cy="95" r="3.5" fill="#334155" />
+            <circle cx="100" cy="55" r="4.5" fill="#dc2626" />
+            <text x="145" y="16" font-size="12" font-weight="bold">A</text>
+            <text x="48" y="98" font-size="12" font-weight="bold">B</text>
+            <text x="108" y="58" font-size="12" font-weight="bold" fill="#dc2626">C</text>
+            <!-- Distance indicators -->
+            <text x="125" y="40" font-size="11" fill="#0284c7">2格</text>
+            <text x="70" y="80" font-size="11" fill="#0284c7">2格</text>
+          </svg>
+        </div>
+        <div style="flex: 1.5;">
+          <div class="interactive-item" onclick="toggleItemAnswer(this)">
+            如左圖，姿廷買了一本印有等距離平行線的筆記本。<br>
+            請找出一點 C 使得 AC : CB ＝ 2 : 3，說說看你是怎麼找出來的？<br>
+            答：<span class="write-blank"><span class="ans-reveal">由 A 往下數 2 格橫線、由 B 往上數 3 格橫線，第 2 條平行線與 AB 的交點即為 C 點！</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="note-card" style="margin-top: 4px;">
+        <div style="font-weight: bold; margin-bottom: 2px;">💡 作法訣竅</div>
+        <div>每一格平行線間的垂直距離皆相等，依平行線截比例線段性質，斜線段 AB 被各平行線所截出的線段長亦皆相等！</div>
+      </div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">牛刀小試 ⓫</span>筆記本平行線定比分點演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 如圖為等距離平行線，請找出點 D 使得 AD : DB ＝ 3 : 2</div>
+          答：<span class="write-blank"><span class="ans-reveal">共 5 格，由 A 點往下數第 3 條平行線與 AB 之交點即為 D</span></span>
+          <div style="text-align: center; margin: 4px 0;">
+            <svg width="180" height="70" viewBox="0 0 180 70">
+              <line x1="20" y1="10" x2="160" y2="10" stroke="#cbd5e1" stroke-width="1" />
+              <line x1="20" y1="22" x2="160" y2="22" stroke="#cbd5e1" stroke-width="1" />
+              <line x1="20" y1="34" x2="160" y2="34" stroke="#cbd5e1" stroke-width="1" />
+              <line x1="20" y1="46" x2="160" y2="46" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="2,2" />
+              <line x1="20" y1="58" x2="160" y2="58" stroke="#cbd5e1" stroke-width="1" />
+              <line x1="120" y1="10" x2="60" y2="58" stroke="#334155" stroke-width="1.5" />
+              <text x="125" y="12" font-size="11">A</text>
+              <text x="50" y="60" font-size="11">B</text>
+              <circle cx="75" cy="46" r="3" fill="#dc2626" />
+              <text x="82" y="47" font-size="10" fill="#dc2626">D</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 6px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 如圖為等距離平行線，請找出點 C 使得 AC : CB ＝ 4 : 3</div>
+          答：<span class="write-blank"><span class="ans-reveal">共 7 格，由 A 點往下數第 4 條平行線與 AB 之交點即為 C</span></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 如圖為等距離平行線，請找出點 C 使得 AC : AB ＝ 4 : 7</div>
+          答：<span class="write-blank"><span class="ans-reveal">全部 7 格，由 A 點往下數第 4 條平行線與 AB 之交點即為 C</span></span>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 10px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 如圖為等距離平行線，請找出點 M 使得 AM : AB ＝ 6 : 7</div>
+          答：<span class="write-blank"><span class="ans-reveal">全部 7 格，由 A 點往下數第 6 條平行線與 AB 之交點即為 M</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 11 頁 / 共 12 頁</div>
+  </div>
+
+
+  <div class="page" id="page-12">
+    <canvas class="drawing-canvas"></canvas>
+    <div class="header-bar">
+      <div class="main-title">國中數學 (五) 1-2 比例線段</div>
+      <div class="user-info">班級：_______ 座號：____ 姓名：___________</div>
+    </div>
+
+    <div class="section-banner">
+      <div><span class="badge">例題 ❸</span>尺規作圖 2 : 3</div>
+      <span class="badge badge-sub">平行線等比分段作圖</span>
+    </div>
+
+    <div class="interactive-item" onclick="toggleItemAnswer(this)">
+      <div class="item-title">利用尺規作圖，在 AB 上找一點 C，使得 AC : CB ＝ 2 : 3。</div>
+      <div class="calc-workspace calc-workspace-lg">
+        <div class="calc-solution">
+          <div class="calc-step">＝ ① 過 A 點作一條不與 AB 重合的射線 AX</div>
+          <div class="calc-step">＝ ② 以適當長度為半徑，在射線 AX 上連續截取 2 + 3 ＝ 5 個等長線段 A1, A2, A3, A4, A5</div>
+          <div class="calc-step">＝ ③ 連接 A5 與 B 點</div>
+          <div class="calc-step">＝ ④ 過 A2 點作 A5B 的平行線，交 AB 於 C 點 ⇒ 則 AC : CB ＝ 2 : 3 即為所求！</div>
+        </div>
+      </div>
+      <div style="text-align: center; margin: 4px 0;">
+        <svg width="280" height="95" viewBox="0 0 280 95">
+          <!-- Segment AB -->
+          <line x1="40" y1="25" x2="240" y2="25" stroke="#334155" stroke-width="2" />
+          <circle cx="40" cy="25" r="3.5" fill="#334155" />
+          <circle cx="240" cy="25" r="3.5" fill="#334155" />
+          <text x="32" y="22" font-size="12" font-weight="bold">A</text>
+          <text x="245" y="28" font-size="12" font-weight="bold">B</text>
+          <!-- Ray AX -->
+          <line x1="40" y1="25" x2="220" y2="85" stroke="#94a3b8" stroke-width="1.2" />
+          <text x="225" y="88" font-size="11" fill="#64748b">X</text>
+          <!-- Arc ticks on ray -->
+          <circle cx="76" cy="37" r="2" fill="#0284c7" />
+          <circle cx="112" cy="49" r="2" fill="#0284c7" />
+          <circle cx="148" cy="61" r="2" fill="#0284c7" />
+          <circle cx="184" cy="73" r="2" fill="#0284c7" />
+          <circle cx="220" cy="85" r="2" fill="#0284c7" />
+          <text x="108" y="63" font-size="10" fill="#0284c7">A2</text>
+          <text x="215" y="97" font-size="10" fill="#0284c7">A5</text>
+          <!-- Parallel lines A5B and A2C -->
+          <line x1="220" y1="85" x2="240" y2="25" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
+          <line x1="112" y1="49" x2="120" y2="25" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3" />
+          <!-- Point C -->
+          <circle cx="120" cy="25" r="4" fill="#dc2626" />
+          <text x="117" y="16" font-size="12" font-weight="bold" fill="#dc2626">C</text>
+          <text x="75" y="18" font-size="10" fill="#0284c7">2份</text>
+          <text x="175" y="18" font-size="10" fill="#0284c7">3份</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="section-banner" style="margin-top: 4px;">
+      <div><span class="badge">牛刀小試 ⓬</span>尺規作圖演練</div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="col-divider">
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">1. 利用尺規作圖在 AB 上找一點 C 使得 AC : BC ＝ 1 : 4</div>
+          作法：<span class="write-blank"><span class="ans-reveal">過 A 作射線截 1+4＝5 等分，連接第 5 點與 B，過第 1 點作平行線交 AB 於 C 即為所求</span></span>
+          <div style="margin-top: 6px;">
+            <line style="border-bottom: 2px solid #334155; display: inline-block; width: 140px; vertical-align: middle;"></line>
+            <span style="font-weight: bold; margin-left: 5px;">A —————— B</span>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 10px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">2. 利用尺規作圖在 AB 上找一點 C 使得 AC : BC ＝ 2 : 5</div>
+          作法：<span class="write-blank"><span class="ans-reveal">過 A 作射線截 2+5＝7 等分，連接第 7 點與 B，過第 2 點作平行線交 AB 於 C 即為所求</span></span>
+          <div style="margin-top: 6px;">
+            <span style="font-weight: bold;">A —————— B</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="interactive-item" onclick="toggleItemAnswer(this)">
+          <div class="item-title">3. 利用尺規作圖在 AB 上找一點 C 使得 AC ＝ 4/5 AB</div>
+          作法：<span class="write-blank"><span class="ans-reveal">過 A 作射線截 5 等分，連接第 5 點與 B，過第 4 點作平行線交 AB 於 C 即為所求</span></span>
+          <div style="margin-top: 6px;">
+            <span style="font-weight: bold;">A —————— B</span>
+          </div>
+        </div>
+
+        <div class="interactive-item" style="margin-top: 10px;" onclick="toggleItemAnswer(this)">
+          <div class="item-title">4. 利用尺規作圖在 AB 上找一點 D 使得 AD ＝ 3/7 AB</div>
+          作法：<span class="write-blank"><span class="ans-reveal">過 A 作射線截 7 等分，連接第 7 點與 B，過第 3 點作平行線交 AB 於 D 即為所求</span></span>
+          <div style="margin-top: 6px;">
+            <span style="font-weight: bold;">A —————— B</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-footer">第 12 頁 / 共 12 頁</div>
+  </div>
+
+  </div>
+
+  <script>
+    // 1. 章節目錄選單
+    function toggleTocMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('tocMenu');
+      menu.classList.toggle('show');
+    }
+    function jumpTo(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('tocMenu').classList.remove('show');
+      }
+    }
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('tocMenu');
+      const btn = document.getElementById('tocBtn');
+      if (menu && menu.classList.contains('show')) {
+        if (!menu.contains(e.target) && e.target !== btn) {
+          menu.classList.remove('show');
+        }
+      }
+    });
+
+    // 2. 逐題/逐步顯現答案
+    let isAllAnsShown = false;
+    let isPenMode = false;
+    let currentColor = 'rgba(250, 204, 21, 0.45)';
+    let currentSize = 4;
+
+    function toggleItemAnswer(el) {
+      if (isPenMode) return;
+      const steps = el.querySelectorAll('.calc-step');
+      if (steps.length === 0) {
+        el.classList.toggle('show-one');
+        el.classList.toggle('ans-done');
+        return;
+      }
+      const shownSteps = el.querySelectorAll('.calc-step.show').length;
+      if (shownSteps < steps.length) {
+        steps[shownSteps].classList.add('show');
+        el.classList.add('show-one');
+        if (shownSteps + 1 === steps.length) {
+          el.classList.add('ans-done');
+        }
+      } else {
+        steps.forEach(s => s.classList.remove('show'));
+        el.classList.remove('show-one');
+        el.classList.remove('ans-done');
+      }
+    }
+
+    // 3. 一鍵全開/全隱答案
+    function toggleAllAnswers() {
+      isAllAnsShown = !isAllAnsShown;
+      const btn = document.getElementById('toggleAllAnsBtn');
+      const icon = document.getElementById('ansIcon');
+      const container = document.querySelector('.pages-container');
+      if (isAllAnsShown) {
+        container.classList.add('show-ans');
+        btn.classList.add('active');
+        icon.textContent = '🙈';
+        document.querySelectorAll('.calc-step').forEach(s => s.classList.add('show'));
+      } else {
+        container.classList.remove('show-ans');
+        btn.classList.remove('active');
+        icon.textContent = '👁️';
+        document.querySelectorAll('.interactive-item').forEach(el => {
+          el.classList.remove('show-one', 'ans-done');
+        });
+        document.querySelectorAll('.calc-step').forEach(s => s.classList.remove('show'));
+      }
+    }
+
+    // 4. 畫筆工具
+    function togglePenMode() {
+      isPenMode = !isPenMode;
+      const penBtn = document.getElementById('penBtn');
+      const options = document.getElementById('penOptions');
+      if (isPenMode) {
+        penBtn.classList.add('active');
+        options.style.display = 'inline-flex';
+        document.body.classList.add('pen-mode');
+      } else {
+        penBtn.classList.remove('active');
+        options.style.display = 'none';
+        document.body.classList.remove('pen-mode');
+      }
+    }
+
+    function setPenColor(color, el) {
+      currentColor = color;
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+      el.classList.add('active');
+    }
+    function setPenSize(size, el) {
+      currentSize = size;
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // 5. Canvas 畫布
+    const canvases = [];
+    function initCanvases() {
+      document.querySelectorAll('.page').forEach(page => {
+        const canvas = page.querySelector('.drawing-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        function resize() {
+          const rect = page.getBoundingClientRect();
+          const scale = window.devicePixelRatio || 1;
+          canvas.width = rect.width * scale;
+          canvas.height = rect.height * scale;
+          ctx.scale(scale, scale);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+        function getPos(e) {
+          const rect = canvas.getBoundingClientRect();
+          if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+          }
+          return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+        function startDraw(e) {
+          if (!isPenMode) return;
+          isDrawing = true;
+          const pos = getPos(e);
+          lastX = pos.x; lastY = pos.y;
+        }
+        function draw(e) {
+          if (!isDrawing || !isPenMode) return;
+          const pos = getPos(e);
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.strokeStyle = currentColor;
+          ctx.lineWidth = currentSize;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+          lastX = pos.x; lastY = pos.y;
+          e.preventDefault();
+        }
+        function stopDraw() { isDrawing = false; }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('touchstart', startDraw, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        window.addEventListener('touchend', stopDraw);
+        canvases.push({ canvas, ctx });
+      });
+    }
+
+    function clearAllDrawings() {
+      canvases.forEach(({ canvas, ctx }) => {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      });
+    }
+    window.addEventListener('DOMContentLoaded', initCanvases);
+  </script>
+</body>
+</html>
