@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>國中數學 B5 第一章：相似形與比例 - 雙模式教學電子書整合總覽</title>
+<style>
+  :root {
+    --primary: #2b6cb0;
+    --primary-dark: #1a365d;
+    --primary-light: #ebf8ff;
+    --accent: #dd6b20;
+    --bg: #f7fafc;
+    --card-bg: #ffffff;
+    --text-main: #2d3748;
+    --text-muted: #718096;
+    --border: #e2e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "BiauKai", "DFKai-SB", "標楷體", serif;
+    background-color: var(--bg);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 0 0 40px 0;
+  }
+
+  /* Header Section */
+  .hero {
+    background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+    color: white;
+    padding: 40px 20px 30px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(5px);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13pt;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .hero h1 {
+    font-size: 26pt;
+    margin-bottom: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+  }
+  .hero p {
+    font-size: 14pt;
+    opacity: 0.92;
+    max-width: 800px;
+    margin: 0 auto 18px;
+  }
+
+  /* Stats Bar */
+  .stats-container {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-size: 12pt;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stat-num {
+    font-size: 16pt;
+    font-weight: bold;
+    color: #fefcbf;
+  }
+
+  /* Main Container */
+  .container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+
+  .section-title {
+    font-size: 18pt;
+    font-weight: bold;
+    color: var(--primary-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 5px solid var(--primary);
+    padding-left: 12px;
+  }
+
+  /* Unit Cards Grid */
+  .unit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 22px;
+    margin-bottom: 40px;
+  }
+
+  .unit-card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .unit-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-color: #90cdf4;
+  }
+
+  .card-top {
+    padding: 18px 20px 14px;
+    background: #edf2f7;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .unit-code {
+    font-size: 14pt;
+    font-weight: bold;
+    color: var(--primary);
+  }
+  .page-count-badge {
+    background: #2b6cb0;
+    color: white;
+    font-size: 10.5pt;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 12px;
+  }
+
+  .card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .unit-title {
+    font-size: 17pt;
+    font-weight: bold;
+    color: #1a202c;
+    margin-bottom: 10px;
+  }
+  .unit-desc {
+    font-size: 12pt;
+    color: #4a5568;
+    margin-bottom: 16px;
+    flex: 1;
+    line-height: 1.6;
+  }
+  .feature-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .tag {
+    font-size: 10pt;
+    background: #f0fff4;
+    color: #276749;
+    border: 1px solid #c6f6d5;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12pt;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    border: 1px solid var(--primary);
+  }
+  .btn-primary:hover {
+    background: var(--primary-dark);
+  }
+  .btn-secondary {
+    background: #edf2f7;
+    color: #2d3748;
+    border: 1px solid #cbd5e0;
+  }
+  .btn-secondary:hover {
+    background: #e2e8f0;
+  }
+
+  /* Embedded Viewer Section */
+  .viewer-section {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .viewer-header {
+    background: #2d3748;
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .tabs-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: #4a5568;
+    color: #e2e8f0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover {
+    background: #718096;
+    color: white;
+  }
+  .tab-btn.active {
+    background: #3182ce;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+
+  .viewer-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .v-tool-btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 11pt;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .v-tool-btn:hover {
+    background: rgba(255,255,255,0.28);
+  }
+
+  .iframe-wrapper {
+    width: 100%;
+    height: 850px;
+    position: relative;
+    background: #edf2f7;
+  }
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* Instructions Footnote */
+  .instructions-card {
+    margin-top: 30px;
+    background: #ebf8ff;
+    border: 1px solid #bee3f8;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .instruction-icon {
+    font-size: 28pt;
+    line-height: 1;
+  }
+  .instruction-content h3 {
+    color: #2b6cb0;
+    margin-bottom: 6px;
+    font-size: 14pt;
+  }
+  .instruction-content p {
+    font-size: 11.5pt;
+    color: #2c5282;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero Section -->
+<header class="hero">
+  <div class="hero-badge">國中九年級（上）數學第一章</div>
+  <h1>相似形與比例・雙模式教學互動電子書</h1>
+  <p>專為基礎補強與大屏互動教學打造，全單元具備「學生端純淨 A4 列印」與「教師端大屏逐步揭曉」雙模式。</p>
+  
+  <div class="stats-container">
+    <div class="stat-pill">📚 單元數量：<span class="stat-num">4</span> 單元</div>
+    <div class="stat-pill">📄 總頁數：<span class="stat-num">53</span> 頁 A4</div>
+    <div class="stat-pill">💡 互動提示：<span class="stat-num">650+</span> 處揭曉</div>
+    <div class="stat-pill">📐 向量圖形：<span class="stat-num">60+</span> 組 SVG</div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- Unit Cards -->
+  <div class="section-title">
+    <span>📑 單元導航與獨立開啟</span>
+  </div>
+
+  <div class="unit-grid">
+    <!-- 1-1 連比 -->
+    <div class="unit-card">
+      <div class="card-top">
+        <span class="unit-code">單元 1-1</span>
+        <span class="page-count-badge">11 頁</span>
+      </div>
+      <div class="card-body">
+        <div class="unit-title">連比</div>
+        <div class="unit-desc">
+          連比的定義與簡記、連比例式性質、三連比代入法、配方與連比例方程式、生活應用問題。
+        </div>
+        <div class="feature-tags">
+          <span class="tag">連比例式</span>
+          <span class="tag">三項運算</span>
+          <span class="tag">11頁全</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="loadUnit(0)">📺 內嵌檢視</button>
+          <a href="B5_1-1_連比_自製電子書.html" target="_blank" class="btn btn-secondary">↗ 另開新頁</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1-2 比例線段 -->
+    <div class="unit-card">
+      <div class="card-top">
+        <span class="unit-code">單元 1-2</span>
+        <span class="page-count-badge">12 頁</span>
+      </div>
+      <div class="card-body">
+        <div class="unit-title">比例線段</div>
+        <div class="unit-desc">
+          同底等高面積比、平行線截比例線段、梯形截線性質、兩邊中點連線性質、筆記本等距線與尺規作圖。
+        </div>
+        <div class="feature-tags">
+          <span class="tag">平行截線</span>
+          <span class="tag">中點連線</span>
+          <span class="tag">16組SVG</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="loadUnit(1)">📺 內嵌檢視</button>
+          <a href="B5_1-2_比例線段_自製電子書.html" target="_blank" class="btn btn-secondary">↗ 另開新頁</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1-3 相似形 -->
+    <div class="unit-card">
+      <div class="card-top">
+        <span class="unit-code">單元 1-3</span>
+        <span class="page-count-badge">19 頁</span>
+      </div>
+      <div class="card-body">
+        <div class="unit-title">相似形</div>
+        <div class="unit-desc">
+          圖形縮放與相似定義、AA/SAS/SSS 相似判定性質、雙直角母子相似射影定理、相似周長比與面積比綜合題。
+        </div>
+        <div class="feature-tags">
+          <span class="tag">AA/SAS/SSS</span>
+          <span class="tag">母子相似</span>
+          <span class="tag">22組SVG</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="loadUnit(2)">📺 內嵌檢視</button>
+          <a href="B5_1-3_相似形_自製電子書.html" target="_blank" class="btn btn-secondary">↗ 另開新頁</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1-4 相似形的應用 -->
+    <div class="unit-card">
+      <div class="card-top">
+        <span class="unit-code">單元 1-4</span>
+        <span class="page-count-badge">11 頁</span>
+      </div>
+      <div class="card-body">
+        <div class="unit-title">相似形的應用</div>
+        <div class="unit-desc">
+          相似三角形高與面積、旗桿樹高影長測量、相思河河寬、45°/30°-60° 特殊角邊長比、銳角三角比 sin/cos/tan、無障礙坡道。
+        </div>
+        <div class="feature-tags">
+          <span class="tag">生活測量</span>
+          <span class="tag">銳角三角比</span>
+          <span class="tag">無障礙坡道</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="loadUnit(3)">📺 內嵌檢視</button>
+          <a href="B5_1-4_相似形的應用_自製電子書.html" target="_blank" class="btn btn-secondary">↗ 另開新頁</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integrated Viewer -->
+  <div class="section-title">
+    <span>📺 教室大屏整合投影播放器</span>
+  </div>
+
+  <div class="viewer-section">
+    <div class="viewer-header">
+      <div class="tabs-group">
+        <button class="tab-btn active" id="tab-0" onclick="loadUnit(0)">📘 1-1 連比 (11頁)</button>
+        <button class="tab-btn" id="tab-1" onclick="loadUnit(1)">📐 1-2 比例線段 (12頁)</button>
+        <button class="tab-btn" id="tab-2" onclick="loadUnit(2)">🔍 1-3 相似形 (19頁)</button>
+        <button class="tab-btn" id="tab-3" onclick="loadUnit(3)">🚩 1-4 相似形的應用 (11頁)</button>
+      </div>
+      <div class="viewer-tools">
+        <a id="open-external-btn" href="B5_1-1_連比_自製電子書.html" target="_blank" class="v-tool-btn">↗ 獨立全視窗開啟</a>
+        <button class="v-tool-btn" onclick="toggleFullscreen()">⛶ 全螢幕教學</button>
+      </div>
+    </div>
+    <div class="iframe-wrapper" id="viewer-container">
+      <iframe id="ebook-frame" src="B5_1-1_連比_自製電子書.html" title="電子書播放器"></iframe>
+    </div>
+  </div>
+
+  <!-- Instruction Notes -->
+  <div class="instructions-card">
+    <div class="instruction-icon">💡</div>
+    <div class="instruction-content">
+      <h3>雙模式使用說明：</h3>
+      <p>
+        <strong>1. 教師端大屏教學</strong>：點選上方任一單元標籤，即可在內嵌播放器中直接進行教學。電子書右上方設有純 Emoji 工具列：點擊 <strong>👁️</strong> 可一鍵揭曉全書解答、<strong>✏️</strong> 可開啟 4 色板書筆在大屏上圈選幾何線段、<strong>🧹</strong> 可清除畫跡。<br>
+        <strong>2. 學生端純淨列印</strong>：在任一單元按下 <strong>Ctrl + P</strong> 或點擊 <strong>🖨️</strong>，所有解答紅字與工具列將 100% 自動隱藏，還原為標準純白紙評量單，容器邊界嚴格鎖定 A4，絕無任何多餘空白溢頁！
+      </p>
+    </div>
+  </div>
+</main>
+
+<script>
+  const units = [
+    { title: "B5 1-1 連比", url: "B5_1-1_連比_自製電子書.html" },
+    { title: "B5 1-2 比例線段", url: "B5_1-2_比例線段_自製電子書.html" },
+    { title: "B5 1-3 相似形", url: "B5_1-3_相似形_自製電子書.html" },
+    { title: "B5 1-4 相似形的應用", url: "B5_1-4_相似形的應用_自製電子書.html" }
+  ];
+
+  function loadUnit(index) {
+    const frame = document.getElementById('ebook-frame');
+    const extBtn = document.getElementById('open-external-btn');
+    
+    // Update active tab
+    for (let i = 0; i < 4; i++) {
+      const tab = document.getElementById(`tab-${i}`);
+      if (tab) tab.classList.toggle('active', i === index);
+    }
+    
+    // Set frame src & external link
+    frame.src = units[index].url;
+    extBtn.href = units[index].url;
+  }
+
+  function toggleFullscreen() {
+    const container = document.getElementById('viewer-container');
+    if (!document.fullscreenElement) {
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+</script>
+</body>
+</html>
