@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B5 1-4 相似形的應用 - 雙模式教學互動電子書</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px 0 60px 0;
+    background: #e2e8f0;
+    font-family: "BiauKai", "DFKai-SB", "標楷體", "Times New Roman", serif;
+    font-size: 14pt;
+    line-height: 1.5;
+    color: #1a202c;
+  }
+
+  /* A4 Page Container */
+  .page {
+    width: 210mm;
+    height: 275mm;
+    max-height: 275mm;
+    margin: 15px auto;
+    padding: 12mm 15mm 10mm 15mm;
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    page-break-after: always;
+  }
+
+  /* Drawing Canvas */
+  .drawing-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+  }
+  body.drawing-mode .drawing-canvas {
+    pointer-events: auto;
+    cursor: crosshair;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #2b6cb0;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+  }
+  .unit-tag {
+    font-size: 16pt;
+    font-weight: bold;
+    color: #2b6cb0;
+    letter-spacing: 1px;
+  }
+  .page-num {
+    font-size: 13pt;
+    color: #718096;
+    font-weight: bold;
+  }
+
+  /* Banner Banners */
+  .concept-banner, .example-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(90deg, #edf2f7, #f7fafc);
+    border-left: 5px solid #2b6cb0;
+    padding: 4px 10px;
+    margin-bottom: 8px;
+    border-radius: 0 6px 6px 0;
+  }
+  .example-banner {
+    border-left-color: #dd6b20;
+  }
+  .concept-badge {
+    background: #2b6cb0;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12pt;
+    font-weight: bold;
+  }
+  .example-badge {
+    background: #dd6b20;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12pt;
+    font-weight: bold;
+  }
+  .concept-title, .example-title {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #2d3748;
+  }
+
+  /* Note Box */
+  .box-note {
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 13pt;
+  }
+  .box-note p { margin: 3px 0; }
+
+  /* Side Notes */
+  .side-note {
+    font-size: 10.5pt;
+    color: #4a5568;
+    background: #edf2f7;
+    border-radius: 4px;
+    padding: 3px 6px;
+    display: inline-block;
+  }
+
+  /* Quiz Header */
+  .quiz-header {
+    background: #2d3748;
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12.5pt;
+    font-weight: bold;
+    margin: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Grid Layouts */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 14px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12.5pt;
+    position: relative;
+  }
+  .card p { margin: 2px 0; }
+
+  /* Scratch Pad */
+  .scratch-pad {
+    margin-top: 4px;
+    padding: 3px 6px;
+    border: 1px dashed #cbd5e0;
+    background: #fafafa;
+    border-radius: 4px;
+    font-size: 11pt;
+    color: #718096;
+    min-height: 22px;
+  }
+
+  /* Step Boxes */
+  .step-box {
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: #edf2f7;
+    border-radius: 6px;
+    font-size: 12.5pt;
+  }
+  .step-line {
+    margin: 3px 0;
+  }
+  .step-num {
+    background: #3182ce;
+    color: #fff;
+    font-size: 10pt;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+    margin-right: 4px;
+  }
+
+  /* Answer Reveals */
+  .ans-reveal {
+    cursor: pointer;
+    background: #edf2f7;
+    border-bottom: 2px dashed #e53e3e;
+    padding: 0 4px;
+    border-radius: 3px;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .ans-reveal:hover {
+    background: #fed7d7;
+  }
+  .ans-reveal .ans-text {
+    visibility: hidden;
+    color: #e53e3e;
+    font-weight: bold;
+  }
+  .ans-reveal.revealed {
+    background: #fff5f5;
+    border-bottom: 2px solid #e53e3e;
+  }
+  .ans-reveal.revealed .ans-text {
+    visibility: visible;
+  }
+
+  /* Floating Emoji Toolbar */
+  #toolbar {
+    position: fixed;
+    top: 12px;
+    right: 20px;
+    background: rgba(26, 32, 44, 0.92);
+    backdrop-filter: blur(8px);
+    padding: 6px 14px;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    user-select: none;
+  }
+  .tool-btn {
+    background: transparent;
+    border: none;
+    font-size: 16pt;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: transform 0.1s, background 0.2s;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tool-btn:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.1);
+  }
+  .tool-btn.active {
+    background: #3182ce;
+  }
+  #toc-select {
+    background: #2d3748;
+    color: #fff;
+    border: 1px solid #4a5568;
+    border-radius: 15px;
+    padding: 3px 8px;
+    font-size: 11pt;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* Print Styles */
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      margin: 0;
+    }
+    #toolbar, .drawing-canvas, .no-print {
+      display: none !important;
+    }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      width: 100% !important;
+      height: 275mm !important;
+      max-height: 275mm !important;
+      overflow: hidden !important;
+      page-break-after: always !important;
+      border: none;
+      padding: 10mm 15mm !important;
+    }
+    .ans-reveal {
+      background: transparent !important;
+      border-bottom: 1px solid #a0aec0 !important;
+    }
+    .ans-reveal .ans-text {
+      visibility: hidden !important;
+    }
+    .scratch-pad {
+      border: 1px dashed #718096 !important;
+      background: #fff !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating Toolbar -->
+<div id="toolbar">
+  <select id="toc-select" title="目錄跳轉">
+    <option value="">📑 單元目錄</option>
+    <option value="page-1">P.1 概念❶ 高與面積比</option>
+    <option value="page-2">P.2 牛刀小試 ❶ (續)</option>
+    <option value="page-3">P.3 例題❶ 測量旗桿高</option>
+    <option value="page-4">P.4 例題❷ 測量相思河寬</option>
+    <option value="page-5">P.5 概念❷ 45°-45°-90°</option>
+    <option value="page-6">P.6 概念❸ 30°-60°-90°</option>
+    <option value="page-7">P.7 例題❸ 特殊直角邊長</option>
+    <option value="page-8">P.8 概念❹ 銳角三角比</option>
+    <option value="page-9">P.9 例題❹ 三角比數值</option>
+    <option value="page-10">P.10 例題❺ 特殊角三角比</option>
+    <option value="page-11">P.11 例題❻ 坡度與應用</option>
+  </select>
+  <button class="tool-btn" id="btn-toggle-ans" title="一鍵全開/全隱 (A)">👁️</button>
+  <button class="tool-btn" id="btn-pen" title="畫筆切換 (P)">✏️</button>
+  <input type="color" id="pen-color" value="#e53e3e" title="畫筆顏色" style="width:24px; height:24px; border:none; border-radius:50%; cursor:pointer; background:none;">
+  <button class="tool-btn" id="btn-clear" title="清除本頁筆跡 (C)">🧹</button>
+  <button class="tool-btn" id="btn-print" title="列印全書 (Ctrl+P)">🖨️</button>
+</div>
+
+<!-- ========== PAGE 1 (P.49) ========== -->
+<div class="page" id="page-1">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">49</div>
+  </div>
+  
+  <div class="concept-banner">
+    <span class="concept-badge">概念 ❶</span>
+    <span class="concept-title">相似三角形的高與面積</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>☆ 若 $\triangle ABC \sim \triangle DEF$，且 $A、B、C$ 的對應點分別是 $D、E、F$，若 $\overline{AG}、\overline{DH}$ 分別為 $\overline{BC}$ 和 $\overline{EF}$ 上的高，請說明：</p>
+        <p style="font-weight:bold; font-size:15pt; text-align:center; color:#1a365d; margin:6px 0;">
+          $\overline{AG} : \overline{DH} = \overline{AB} : \overline{DE}$
+        </p>
+        <div class="step-box ans-reveal">
+          <span style="color:#2b6cb0; font-weight:bold;">【推導理由】</span>在 $\triangle ABG$ 與 $\triangle DEH$ 中，因 $\angle B = \angle E$ 且 $\angle AGB = \angle DHE = 90^\circ$，由 <strong>AA 相似</strong> 可得 $\triangle ABG \sim \triangle DEH$，故 $\overline{AG} : \overline{DH} = \overline{AB} : \overline{DE}$。
+        </div>
+        
+        <p style="margin-top:10px;">☆ 如果 $\overline{AB} : \overline{DE} = 2 : 3$，則：</p>
+        <div style="padding-left:15px; line-height:1.9;">
+          ❶ $\overline{AG} : \overline{DH} = $ <span class="ans-reveal"><span class="ans-text">2 : 3</span></span><br>
+          ❷ $\triangle ABC \text{ 面積} : \triangle DEF \text{ 面積} = $ <span class="ans-reveal"><span class="ans-text">4 : 9</span></span>
+        </div>
+      </div>
+      <div style="width:220px; text-align:center;">
+        <!-- SVG: 兩個相似三角形與高 -->
+        <svg width="220" height="120" viewBox="0 0 220 120">
+          <!-- Triangle 1 ABC -->
+          <polygon points="40,20 10,95 85,95" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="1.8"/>
+          <line x1="40" y1="20" x2="40" y2="95" stroke="#e53e3e" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <rect x="40" y="87" width="8" height="8" fill="none" stroke="#e53e3e" stroke-width="1"/>
+          <text x="38" y="15" font-size="12" font-weight="bold">A</text>
+          <text x="2" y="102" font-size="12" font-weight="bold">B</text>
+          <text x="37" y="108" font-size="11" fill="#e53e3e" font-weight="bold">G</text>
+          <text x="87" y="102" font-size="12" font-weight="bold">C</text>
+          
+          <!-- Triangle 2 DEF -->
+          <polygon points="155,10 115,105 215,105" fill="#fefcbf" stroke="#d69e2e" stroke-width="1.8"/>
+          <line x1="155" y1="10" x2="155" y2="105" stroke="#e53e3e" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <rect x="155" y="97" width="8" height="8" fill="none" stroke="#e53e3e" stroke-width="1"/>
+          <text x="152" y="8" font-size="12" font-weight="bold">D</text>
+          <text x="103" y="112" font-size="12" font-weight="bold">E</text>
+          <text x="152" y="117" font-size="11" fill="#e53e3e" font-weight="bold">H</text>
+          <text x="216" y="112" font-size="12" font-weight="bold">F</text>
+        </svg>
+        <div class="side-note" style="margin-top:5px;">☆ 筆記：對應角相等、直角相等 $\implies$ 左右直角 $\triangle$ 相似！</div>
+      </div>
+    </div>
+
+    <!-- 整理卡片 -->
+    <div style="background:#fff; border:1.5px solid #4a5568; border-radius:8px; padding:8px 14px; margin-top:10px;">
+      <div style="font-weight:bold; color:#2d3748; margin-bottom:4px;">【重要整理】兩相似三角形：</div>
+      <div style="display:flex; justify-content:space-around;">
+        <div>❶ <strong>對應高的比</strong> ＝ <span class="ans-reveal"><span class="ans-text">相似比（對應邊長比）</span></span></div>
+        <div>❷ <strong>面積比</strong> ＝ <span class="ans-reveal"><span class="ans-text">相似比的平方（邊長比的平方）</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 牛刀小試 1 -->
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❶</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 如圖，已知 $\triangle ABC \sim \triangle DEF$。$\overline{AH}$ 為 $\overline{BC}$ 上的高，$\overline{DG}$ 為 $\overline{EF}$ 上的高。若 $\overline{BC}=15,\; \overline{EF}=20$，則：</p>
+      <div style="text-align:center; margin:4px 0;">
+        <svg width="190" height="95" viewBox="0 0 190 95">
+          <polygon points="35,15 10,85 70,85" fill="#edf2f7" stroke="#4a5568" stroke-width="1.5"/>
+          <line x1="35" y1="15" x2="35" y2="85" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <rect x="35" y="78" width="6" height="6" fill="none" stroke="#e53e3e" stroke-width="0.8"/>
+          <text x="32" y="12" font-size="11">A</text><text x="3" y="90" font-size="11">B</text><text x="33" y="95" font-size="10" fill="#e53e3e">H</text><text x="72" y="90" font-size="11">C</text>
+
+          <polygon points="135,8 100,90 180,90" fill="#edf2f7" stroke="#4a5568" stroke-width="1.5"/>
+          <line x1="135" y1="8" x2="135" y2="90" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <rect x="135" y="83" width="6" height="6" fill="none" stroke="#e53e3e" stroke-width="0.8"/>
+          <text x="132" y="7" font-size="11">D</text><text x="92" y="94" font-size="11">E</text><text x="133" y="98" font-size="10" fill="#e53e3e">G</text><text x="182" y="94" font-size="11">F</text>
+        </svg>
+      </div>
+      <p>(1) $\overline{BC} : \overline{EF} = $ <span class="ans-reveal"><span class="ans-text">3 : 4</span></span>；$\overline{AH} : \overline{DG} = $ <span class="ans-reveal"><span class="ans-text">3 : 4</span></span></p>
+      <p>(2) $\triangle ABC$ 和 $\triangle DEF$ 的面積比為 <span class="ans-reveal"><span class="ans-text">9 : 16</span></span></p>
+      <div class="scratch-pad">留白計算：相似比 = 15:20 = 3:4，面積比 = 3²:4² = 9:16</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 如圖，已知 $\triangle ABC \sim \triangle DEF$。$\overline{AH}$ 為 $\overline{BC}$ 上的高，$\overline{DG}$ 為 $\overline{EF}$ 上的高。若 $\overline{BC}=12,\; \overline{EF}=20$，則：</p>
+      <div style="text-align:center; margin:4px 0;">
+        <svg width="190" height="95" viewBox="0 0 190 95">
+          <polygon points="35,15 10,85 70,85" fill="#edf2f7" stroke="#4a5568" stroke-width="1.5"/>
+          <line x1="35" y1="15" x2="35" y2="85" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <rect x="35" y="78" width="6" height="6" fill="none" stroke="#e53e3e" stroke-width="0.8"/>
+          <text x="32" y="12" font-size="11">A</text><text x="3" y="90" font-size="11">B</text><text x="33" y="95" font-size="10" fill="#e53e3e">H</text><text x="72" y="90" font-size="11">C</text>
+
+          <polygon points="135,8 100,90 180,90" fill="#edf2f7" stroke="#4a5568" stroke-width="1.5"/>
+          <line x1="135" y1="8" x2="135" y2="90" stroke="#e53e3e" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <rect x="135" y="83" width="6" height="6" fill="none" stroke="#e53e3e" stroke-width="0.8"/>
+          <text x="132" y="7" font-size="11">D</text><text x="92" y="94" font-size="11">E</text><text x="133" y="98" font-size="10" fill="#e53e3e">G</text><text x="182" y="94" font-size="11">F</text>
+        </svg>
+      </div>
+      <p>(1) $\overline{BC} : \overline{EF} = $ <span class="ans-reveal"><span class="ans-text">3 : 5</span></span>；$\overline{AH} : \overline{DG} = $ <span class="ans-reveal"><span class="ans-text">3 : 5</span></span></p>
+      <p>(2) $\triangle ABC$ 和 $\triangle DEF$ 的面積比為 <span class="ans-reveal"><span class="ans-text">9 : 25</span></span></p>
+      <div class="scratch-pad">留白計算：相似比 = 12:20 = 3:5，面積比 = 3²:5² = 9:25</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 2 (P.50) ========== -->
+<div class="page" id="page-2">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">50</div>
+  </div>
+  
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❶（續）</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 如圖，已知 $\triangle ABC \sim \triangle DEF$。$\overline{AH}$ 為 $\overline{BC}$ 上的高，$\overline{DG}$ 為 $\overline{EF}$ 上的高。若 $\overline{AB}=8,\; \overline{DE}=12$，則：</p>
+      <div style="text-align:center; margin:2px 0;">
+        <svg width="180" height="75" viewBox="0 0 180 75">
+          <polygon points="35,10 10,70 65,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="35" y1="10" x2="35" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="32" y="8" font-size="10">A</text><text x="3" y="74" font-size="10">B</text><text x="33" y="75" font-size="9" fill="#e53e3e">H</text><text x="67" y="74" font-size="10">C</text>
+
+          <polygon points="125,5 95,70 165,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="125" y1="5" x2="125" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="122" y="5" font-size="10">D</text><text x="88" y="74" font-size="10">E</text><text x="123" y="75" font-size="9" fill="#e53e3e">G</text><text x="167" y="74" font-size="10">F</text>
+        </svg>
+      </div>
+      <p>(1) $\overline{BC} : \overline{EF} = $ <span class="ans-reveal"><span class="ans-text">2 : 3</span></span>；$\overline{AH} : \overline{DG} = $ <span class="ans-reveal"><span class="ans-text">2 : 3</span></span></p>
+      <p>(2) $\triangle ABC$ 和 $\triangle DEF$ 的面積比為 <span class="ans-reveal"><span class="ans-text">4 : 9</span></span></p>
+      <p>(3) 若 $\triangle ABC$ 面積是 16，則 $\triangle DEF$ 的面積為 <span class="ans-reveal"><span class="ans-text">36</span></span></p>
+      <div class="scratch-pad">計算：面積比 4:9 $\implies 16 : \text{面積} = 4 : 9 \implies \text{面積} = 36$</div>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 如圖，已知 $\triangle ABC \sim \triangle DEF$。$\overline{AH}$ 為 $\overline{BC}$ 上的高，$\overline{DG}$ 為 $\overline{EF}$ 上的高。若 $\overline{AC}=5,\; \overline{DF}=7$，則：</p>
+      <div style="text-align:center; margin:2px 0;">
+        <svg width="180" height="75" viewBox="0 0 180 75">
+          <polygon points="35,10 10,70 65,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="35" y1="10" x2="35" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="32" y="8" font-size="10">A</text><text x="3" y="74" font-size="10">B</text><text x="33" y="75" font-size="9" fill="#e53e3e">H</text><text x="67" y="74" font-size="10">C</text>
+
+          <polygon points="125,5 95,70 165,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="125" y1="5" x2="125" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="122" y="5" font-size="10">D</text><text x="88" y="74" font-size="10">E</text><text x="123" y="75" font-size="9" fill="#e53e3e">G</text><text x="167" y="74" font-size="10">F</text>
+        </svg>
+      </div>
+      <p>(1) $\overline{BC} : \overline{EF} = $ <span class="ans-reveal"><span class="ans-text">5 : 7</span></span>；$\overline{AH} : \overline{DG} = $ <span class="ans-reveal"><span class="ans-text">5 : 7</span></span></p>
+      <p>(2) $\triangle ABC$ 和 $\triangle DEF$ 的面積比為 <span class="ans-reveal"><span class="ans-text">25 : 49</span></span></p>
+      <p>(3) 若 $\triangle ABC$ 面積是 50，則 $\triangle DEF$ 的面積為 <span class="ans-reveal"><span class="ans-text">98</span></span></p>
+      <div class="scratch-pad">計算：面積比 25:49 $\implies 50 : \text{面積} = 25 : 49 \implies \text{面積} = 98$</div>
+    </div>
+
+    <!-- 題 5 -->
+    <div class="card">
+      <p><strong>5.</strong> 如圖，已知 $\triangle ABC \sim \triangle DEF$。$\overline{AH}$ 為 $\overline{BC}$ 上的高，$\overline{DG}$ 為 $\overline{EF}$ 上的高。若 $\overline{AH}=3,\; \overline{DG}=8$，則：</p>
+      <div style="text-align:center; margin:2px 0;">
+        <svg width="180" height="75" viewBox="0 0 180 75">
+          <polygon points="35,15 15,70 60,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="35" y1="15" x2="35" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="32" y="12" font-size="10">A</text><text x="6" y="74" font-size="10">B</text><text x="33" y="75" font-size="9" fill="#e53e3e">H</text><text x="62" y="74" font-size="10">C</text>
+
+          <polygon points="125,5 95,70 165,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="125" y1="5" x2="125" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="122" y="5" font-size="10">D</text><text x="88" y="74" font-size="10">E</text><text x="123" y="75" font-size="9" fill="#e53e3e">G</text><text x="167" y="74" font-size="10">F</text>
+        </svg>
+      </div>
+      <p>(1) $\overline{BC}$ 和 $\overline{EF}$ 的長度比為 <span class="ans-reveal"><span class="ans-text">3 : 8</span></span></p>
+      <p>(2) 若 $\overline{EF}=16$，求 $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">6</span></span></p>
+      <p>(3) $\triangle ABC$ 和 $\triangle DEF$ 的面積比為 <span class="ans-reveal"><span class="ans-text">9 : 64</span></span></p>
+      <div class="scratch-pad">計算：$\frac{\overline{BC}}{16} = \frac{3}{8} \implies \overline{BC} = 6$；面積比 = 3²:8² = 9:64</div>
+    </div>
+
+    <!-- 題 6 -->
+    <div class="card">
+      <p><strong>6.</strong> 如圖，已知 $\triangle ABC \sim \triangle DEF$。$\overline{AH}$ 為 $\overline{BC}$ 上的高，$\overline{DG}$ 為 $\overline{EF}$ 上的高。若 $\triangle ABC$ 和 $\triangle DEF$ 面積比為 $4 : 9$，則：</p>
+      <div style="text-align:center; margin:2px 0;">
+        <svg width="180" height="75" viewBox="0 0 180 75">
+          <polygon points="35,15 15,70 60,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="35" y1="15" x2="35" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="32" y="12" font-size="10">A</text><text x="6" y="74" font-size="10">B</text><text x="33" y="75" font-size="9" fill="#e53e3e">H</text><text x="62" y="74" font-size="10">C</text>
+
+          <polygon points="125,5 95,70 165,70" fill="#edf2f7" stroke="#4a5568" stroke-width="1.4"/>
+          <line x1="125" y1="5" x2="125" y2="70" stroke="#e53e3e" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="122" y="5" font-size="10">D</text><text x="88" y="74" font-size="10">E</text><text x="123" y="75" font-size="9" fill="#e53e3e">G</text><text x="167" y="74" font-size="10">F</text>
+        </svg>
+      </div>
+      <p>(1) $\overline{BC} : \overline{EF} = $ <span class="ans-reveal"><span class="ans-text">2 : 3</span></span></p>
+      <p>(2) $\overline{AH} : \overline{DG} = $ <span class="ans-reveal"><span class="ans-text">2 : 3</span></span></p>
+      <div class="scratch-pad">留白說明：面積比 = 邊長比的平方 $\implies \text{邊長比} = \sqrt{4} : \sqrt{9} = 2 : 3$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 3 (P.51) ========== -->
+<div class="page" id="page-3">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">51</div>
+  </div>
+  
+  <div class="example-banner">
+    <span class="example-badge">例題 ❶</span>
+    <span class="example-title">測量旗桿的高度</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>羅澤想測量旗桿的高度。已知：羅澤的身高 $\overline{AC}=1.7$ 公尺，他的影子 $\overline{BC}=1$ 公尺，旗桿的影子 $\overline{EF}=2$ 公尺，求旗桿的高度 $\overline{DF}=?$</p>
+        <div class="step-box">
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❶</span> 太陽光為平行光 $\implies \angle B = \angle E$，且地面垂直 $\angle C = \angle F = 90^\circ$，故 $\triangle ABC \sim \triangle DEF$（AA 相似）。
+          </div>
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❷</span> 對應邊成比例：$\frac{\overline{AC}}{\overline{DF}} = \frac{\overline{BC}}{\overline{EF}} \implies \frac{1.7}{\overline{DF}} = \frac{1}{2}$
+          </div>
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❸</span> 交叉相乘：$\overline{DF} = 1.7 \times 2 = $ <span class="ans-text">3.4</span>（公尺）
+          </div>
+        </div>
+      </div>
+      <div style="width:220px; text-align:center;">
+        <!-- SVG: 羅澤與旗桿 -->
+        <svg width="220" height="120" viewBox="0 0 220 120">
+          <!-- 羅澤身高與影子 -->
+          <line x1="50" y1="50" x2="50" y2="105" stroke="#2b6cb0" stroke-width="2.5"/>
+          <circle cx="50" cy="45" r="4.5" fill="#2b6cb0"/>
+          <line x1="20" y1="105" x2="50" y2="105" stroke="#718096" stroke-width="2.5"/>
+          <line x1="20" y1="105" x2="50" y2="40" stroke="#ecc94b" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <rect x="44" y="99" width="6" height="6" fill="none" stroke="#4a5568" stroke-width="0.8"/>
+          <text x="54" y="75" font-size="10">1.7m</text>
+          <text x="28" y="117" font-size="10">1m</text>
+          <text x="52" y="40" font-size="10">A</text>
+          <text x="10" y="110" font-size="10">B</text>
+          <text x="52" y="110" font-size="10">C</text>
+
+          <!-- 旗桿與影子 -->
+          <line x1="160" y1="15" x2="160" y2="105" stroke="#e53e3e" stroke-width="2.5"/>
+          <!-- 國旗 -->
+          <polygon points="160,15 185,25 160,35" fill="#e53e3e"/>
+          <line x1="100" y1="105" x2="160" y2="105" stroke="#718096" stroke-width="2.5"/>
+          <line x1="100" y1="105" x2="160" y2="15" stroke="#ecc94b" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <rect x="154" y="99" width="6" height="6" fill="none" stroke="#4a5568" stroke-width="0.8"/>
+          <text x="165" y="60" font-size="11" fill="#e53e3e" font-weight="bold">? m</text>
+          <text x="122" y="117" font-size="10">2m</text>
+          <text x="162" y="12" font-size="10">D</text>
+          <text x="90" y="110" font-size="10">E</text>
+          <text x="162" y="110" font-size="10">F</text>
+        </svg>
+        <div class="side-note">☆ 筆記：$\triangle ABC$ 和 $\triangle DEF$ 為什麼會相似？（太陽平行光+垂直地面）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❷</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 秉桀想要測量與地面垂直的樹之高度 $\overline{AB}$，他先測得該樹影子 $\overline{BC}$ 的長度為 $350$ 公分，在同一時間，拿一根長 $1$ 公尺的標桿（$A'B'$）垂直地面，測得影子 $B'C'$ 的長度為 $0.7$ 公尺。則該樹的高度 $\overline{AB}$ 為 <span class="ans-reveal"><span class="ans-text">5</span></span> 公尺。</p>
+      <div class="scratch-pad">計算：$\frac{\overline{AB}}{3.5} = \frac{1}{0.7} \implies \overline{AB} = 3.5 \times \frac{10}{7} = 5$（公尺）</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 昱忻想要測量教學大樓的高度 $\overline{AB}$，他先測得教學大樓影子 $\overline{BC}$ 的長度為 $6$ 公尺，在同一時間，拿一根長 $1.5$ 公尺的標桿（$A'B'$）垂直地面，測得影子 $B'C'$ 的長度為 $2$ 公尺。則教學大樓的高度 $\overline{AB}$ 為 <span class="ans-reveal"><span class="ans-text">4.5</span></span> 公尺。</p>
+      <div class="scratch-pad">計算：$\frac{\overline{AB}}{6} = \frac{1.5}{2} \implies \overline{AB} = 6 \times 0.75 = 4.5$（公尺）</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 如圖，瑞妤想要測量自家大樓高度 $\overline{AB}$，距離該大樓前方 $12$ 公尺 $E$ 點有一棵高為 $2$ 公尺大樹 $\overline{DE}$，大樓影子長度 $\overline{BC}$ 和大樹影子長度 $\overline{CE}$ 重疊交於 $C$ 點，已知大樓影子長度 $\overline{BC}$ 為 $15$ 公尺，則大樓高度 $\overline{AB}$ 為 <span class="ans-reveal"><span class="ans-text">10</span></span> 公尺。</p>
+      <div class="scratch-pad">計算：$\overline{CE} = 15 - 12 = 3$，$\frac{\overline{AB}}{2} = \frac{15}{3} = 5 \implies \overline{AB} = 10$</div>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 如圖，品希想要測量樹高 $\overline{AB}$，她在樹前 $15$ 公尺的 $E$ 點立一根長為 $4$ 公尺的標竿 $\overline{DE}$，$\overline{AD}$ 和 $\overline{BE}$ 延長交於 $C$ 點，已知樹的影子長度 $\overline{BC}$ 是 $20$ 公尺，則樹高 $\overline{AB}$ 為 <span class="ans-reveal"><span class="ans-text">16</span></span> 公尺。</p>
+      <div class="scratch-pad">計算：$\overline{CE} = 20 - 15 = 5$，$\frac{\overline{AB}}{4} = \frac{20}{5} = 4 \implies \overline{AB} = 16$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 4 (P.52) ========== -->
+<div class="page" id="page-4">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">52</div>
+  </div>
+  
+  <div class="example-banner">
+    <span class="example-badge">例題 ❷</span>
+    <span class="example-title">測量河寬</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>小智想測量相思河的寬度，他在河的一岸望向對岸的 $A$ 點，量出 $\overline{BC}=3$ 公尺，$\overline{BD}=4$ 公尺，$\overline{DE}=5$ 公尺，求相思河寬度 $\overline{AB}=?$</p>
+        <div class="step-box">
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❶</span> 因 $\overline{BC} \parallel \overline{DE}$，故 $\triangle ABC \sim \triangle ADE$（AA 相似）。
+          </div>
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❷</span> 列出比例式：$\frac{\overline{AB}}{\overline{AD}} = \frac{\overline{BC}}{\overline{DE}} \implies \frac{\overline{AB}}{\overline{AB}+4} = \frac{3}{5}$
+          </div>
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❸</span> 交叉相乘：$5\overline{AB} = 3(\overline{AB}+4) = 3\overline{AB} + 12 \implies 2\overline{AB} = 12 \implies \overline{AB} = $ <span class="ans-text">6</span>（公尺）
+          </div>
+        </div>
+      </div>
+      <div style="width:220px; text-align:center;">
+        <!-- SVG: 相思河平行截線 -->
+        <svg width="220" height="120" viewBox="0 0 220 120">
+          <!-- 河流波浪背景 -->
+          <path d="M10,40 Q60,35 110,40 T210,40 L210,65 Q160,70 110,65 T10,65 Z" fill="#e6fffa" opacity="0.6"/>
+          <text x="40" y="55" font-size="11" fill="#319795" font-style="italic">相思河</text>
+          
+          <!-- 幾何線段 A-B-D 與 C, E -->
+          <line x1="130" y1="10" x2="130" y2="105" stroke="#4a5568" stroke-width="1.8"/>
+          <line x1="130" y1="10" x2="60" y2="105" stroke="#4a5568" stroke-width="1.5"/>
+          <line x1="95" y1="58" x2="130" y2="58" stroke="#2b6cb0" stroke-width="2"/>
+          <line x1="60" y1="105" x2="130" y2="105" stroke="#e53e3e" stroke-width="2"/>
+          
+          <rect x="122" y="52" width="6" height="6" fill="none" stroke="#4a5568" stroke-width="0.8"/>
+          <rect x="122" y="99" width="6" height="6" fill="none" stroke="#4a5568" stroke-width="0.8"/>
+          
+          <text x="133" y="12" font-size="11" font-weight="bold">A</text>
+          <text x="134" y="60" font-size="11" font-weight="bold">B</text>
+          <text x="83" y="60" font-size="11" font-weight="bold">C</text>
+          <text x="134" y="110" font-size="11" font-weight="bold">D</text>
+          <text x="47" y="110" font-size="11" font-weight="bold">E</text>
+          <text x="110" y="54" font-size="10" fill="#2b6cb0">3</text>
+          <text x="90" y="117" font-size="10" fill="#e53e3e">5</text>
+          <text x="136" y="85" font-size="10">4</text>
+        </svg>
+        <div class="side-note">☆ 筆記：想想看，還有沒有別的方法可以測量河寬呢？</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❸</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 姿穎想測量河的寬度，他在河的一岸望向對岸的 $A$ 點，測量出 $\overline{DE}=5$ 公尺，$\overline{BC}=8$ 公尺，$\overline{DB}=6$ 公尺，則河寬 $\overline{AD} = $ <span class="ans-reveal"><span class="ans-text">10</span></span> 公尺。</p>
+      <div class="scratch-pad">計算：$\frac{\overline{AD}}{\overline{AD}+6} = \frac{5}{8} \implies 8\overline{AD} = 5\overline{AD}+30 \implies 3\overline{AD} = 30 \implies \overline{AD} = 10$</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 伃彤想測量河的寬度，他在河的一岸同對岸的 $A$ 點量出 $\overline{DE}=8$ 公尺，$\overline{BC}=20$ 公尺，$\overline{DB}=21$ 公尺，那麼河寬 $\overline{AD} = $ <span class="ans-reveal"><span class="ans-text">14</span></span> 公尺。</p>
+      <div class="scratch-pad">計算：$\frac{\overline{AD}}{\overline{AD}+21} = \frac{8}{20} = \frac{2}{5} \implies 5\overline{AD} = 2\overline{AD}+42 \implies 3\overline{AD} = 42 \implies \overline{AD} = 14$</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 銥珊想測量河的寬度，他在河的一岸斜望對岸的 $A$ 點測量出 $\overline{BC}=10$ 公尺，$\overline{CE}=3$ 公尺，$\overline{DE}=6$ 公尺，那麼河寬 $\overline{AD} = $ <span class="ans-reveal"><span class="ans-text">20</span></span> 公尺。</p>
+      <div class="scratch-pad">計算（對頂角 $\triangle ADE \sim \triangle BCE$）：$\frac{\overline{AD}}{10} = \frac{6}{3} = 2 \implies \overline{AD} = 20$</div>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 浩家想測量河的寬度，他在河的一岸斜望對岸的 $A$ 點測量出 $\overline{BC}=20$ 公尺，$\overline{CE}=5$ 公尺，$\overline{DE}=9$ 公尺，那麼河寬 $\overline{AD} = $ <span class="ans-reveal"><span class="ans-text">36</span></span> 公尺。</p>
+      <div class="scratch-pad">計算（對頂角 $\triangle ADE \sim \triangle BCE$）：$\frac{\overline{AD}}{20} = \frac{9}{5} \implies \overline{AD} = 20 \times \frac{9}{5} = 36$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 5 (P.53) ========== -->
+<div class="page" id="page-5">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">53</div>
+  </div>
+  
+  <div class="concept-banner">
+    <span class="concept-badge">概念 ❷</span>
+    <span class="concept-title">特殊直角 $\triangle$ 的邊長關係 ($45^\circ - 45^\circ - 90^\circ$)</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>如右圖，$\triangle ABC$ 是等腰直角三角形，$\angle A = \angle B = 45^\circ,\; \angle C = 90^\circ$，</p>
+        <p style="font-weight:bold; font-size:15pt; text-align:center; color:#1a365d; margin:6px 0;">
+          $\overline{AC} : \overline{BC} : \overline{AB} = $ <span class="ans-reveal"><span class="ans-text">1 : 1 : \sqrt{2}</span></span>
+        </p>
+        <div style="display:flex; gap:20px; margin-top:8px;">
+          <div style="flex:1; background:#fff; border:1px solid #cbd5e0; border-radius:6px; padding:6px 10px;">
+            <strong>&lt;例 ❶&gt;</strong> 若 $\overline{AC}=3$，則：<br>
+            $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">3</span></span><br>
+            $\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">3\sqrt{2}</span></span>
+          </div>
+          <div style="flex:1; background:#fff; border:1px solid #cbd5e0; border-radius:6px; padding:6px 10px;">
+            <strong>&lt;例 ❷&gt;</strong> 若 $\overline{AB}=6$，則：<br>
+            $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">3\sqrt{2}</span></span><br>
+            $\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">3\sqrt{2}</span></span>
+          </div>
+        </div>
+      </div>
+      <div style="width:200px; text-align:center;">
+        <!-- SVG: 45-45-90 直角三角形 -->
+        <svg width="200" height="115" viewBox="0 0 200 115">
+          <polygon points="50,15 50,95 130,95" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="1.8"/>
+          <rect x="50" y="87" width="8" height="8" fill="none" stroke="#2b6cb0" stroke-width="1"/>
+          <text x="42" y="15" font-size="12" font-weight="bold">A</text>
+          <text x="38" y="105" font-size="12" font-weight="bold">C</text>
+          <text x="135" y="102" font-size="12" font-weight="bold">B</text>
+          <text x="54" y="32" font-size="10" fill="#718096">45°</text>
+          <text x="108" y="91" font-size="10" fill="#718096">45°</text>
+          <text x="28" y="60" font-size="11" fill="#e53e3e">1</text>
+          <text x="85" y="110" font-size="11" fill="#e53e3e">1</text>
+          <text x="95" y="50" font-size="11" fill="#e53e3e">√2</text>
+        </svg>
+        <div class="side-note">☆ 筆記：斜邊長 ＝ 股長 $\times \sqrt{2}$</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❹</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 若 $\overline{AC}=4$，求：</p>
+      <p>(1) $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">4</span></span></p>
+      <p>(2) $\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">4\sqrt{2}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 4 \times \sqrt{2} = 4\sqrt{2}$</div>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 若 $\overline{AB}=3\sqrt{2}$，求：</p>
+      <p>(1) $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">3</span></span></p>
+      <p>(2) $\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">3</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = \frac{3\sqrt{2}}{\sqrt{2}} = 3$</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 若 $\overline{BC}=5$，求：</p>
+      <p>(1) $\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">5\sqrt{2}</span></span></p>
+      <p>(2) $\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">5</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 5 \times \sqrt{2} = 5\sqrt{2}$</div>
+    </div>
+
+    <!-- 題 5 -->
+    <div class="card">
+      <p><strong>5.</strong> 若 $\overline{AC}=10$，求：</p>
+      <p>(1) $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">10</span></span></p>
+      <p>(2) $\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">10\sqrt{2}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 10 \times \sqrt{2} = 10\sqrt{2}$</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 若 $\overline{AB}=8$，求：</p>
+      <p>(1) $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">4\sqrt{2}</span></span></p>
+      <p>(2) $\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">4\sqrt{2}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = \frac{8}{\sqrt{2}} = \frac{8\sqrt{2}}{2} = 4\sqrt{2}$</div>
+    </div>
+
+    <!-- 題 6 -->
+    <div class="card">
+      <p><strong>6.</strong> 若 $\overline{AC}=12$，求：</p>
+      <p>(1) $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">12</span></span></p>
+      <p>(2) $\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">12\sqrt{2}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 12 \times \sqrt{2} = 12\sqrt{2}$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 6 (P.54) ========== -->
+<div class="page" id="page-6">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">54</div>
+  </div>
+  
+  <div class="concept-banner">
+    <span class="concept-badge">概念 ❸</span>
+    <span class="concept-title">特殊直角 $\triangle$ 的邊長關係 ($30^\circ - 60^\circ - 90^\circ$)</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>常見的兩種三角板都是直角三角形，其中一種是 $30^\circ-60^\circ-90^\circ$，我們把兩個這種三角板拼起來剛好可以拼成一個「<strong style="color:#2b6cb0;">正三角形</strong>」（如圖）。</p>
+        <p>若 $\angle A=30^\circ,\; \angle B=60^\circ,\; \angle C=90^\circ$。若 $\overline{BC}=a$，則：</p>
+        <p style="font-weight:bold; font-size:15pt; text-align:center; color:#1a365d; margin:6px 0;">
+          $\overline{BC} : \overline{AB} : \overline{AC} = $ <span class="ans-reveal"><span class="ans-text">1 : 2 : \sqrt{3}</span></span>
+        </p>
+        <div class="step-box" style="margin-top:5px;">
+          <strong>口訣：</strong> $30^\circ$ 的對邊是 $1$（最短邊），斜邊是 $2$（最長邊），$60^\circ$ 的對邊是 $\sqrt{3}$。
+        </div>
+      </div>
+      <div style="width:210px; text-align:center;">
+        <!-- SVG: 三角板拼合正三角形 -->
+        <svg width="210" height="120" viewBox="0 0 210 120">
+          <!-- 左右拼成正三角形 -->
+          <polygon points="100,10 40,110 160,110" fill="#f7fafc" stroke="#cbd5e0" stroke-width="1" stroke-dasharray="3,2"/>
+          <!-- 左三角板 -->
+          <polygon points="100,10 40,110 100,110" fill="#fefcbf" stroke="#d69e2e" stroke-width="1.8"/>
+          <line x1="100" y1="10" x2="100" y2="110" stroke="#4a5568" stroke-width="1.5"/>
+          <rect x="92" y="102" width="8" height="8" fill="none" stroke="#4a5568" stroke-width="1"/>
+          
+          <text x="95" y="8" font-size="11" font-weight="bold">A</text>
+          <text x="28" y="115" font-size="11" font-weight="bold">B</text>
+          <text x="98" y="120" font-size="11" font-weight="bold">C</text>
+          
+          <text x="80" y="25" font-size="9" fill="#718096">30°</text>
+          <text x="48" y="105" font-size="9" fill="#718096">60°</text>
+          
+          <text x="65" y="118" font-size="10" fill="#e53e3e">1</text>
+          <text x="55" y="60" font-size="10" fill="#e53e3e">2</text>
+          <text x="105" y="65" font-size="10" fill="#e53e3e">√3</text>
+        </svg>
+        <div class="side-note">☆ 筆記：斜邊長為 $30^\circ$ 對邊的 2 倍</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❺</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 如圖：</p>
+      <p>(1) $\overline{BC} : \overline{AC} : \overline{AB} = $ <span class="ans-reveal"><span class="ans-text">1 : \sqrt{3} : 2</span></span></p>
+      <p>(2) 若 $\overline{BC}=2$，$\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">2\sqrt{3}</span></span>，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">4</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AC} = 2\sqrt{3},\; \overline{AB} = 2 \times 2 = 4$</div>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 如圖：</p>
+      <p>(1) $\overline{BC} : \overline{AB} : \overline{AC} = $ <span class="ans-reveal"><span class="ans-text">1 : 2 : \sqrt{3}</span></span></p>
+      <p>(2) 若 $\overline{AB}=4$，$\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">2</span></span>，$\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">2\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = 4 \div 2 = 2,\; \overline{AC} = 2\sqrt{3}$</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 如圖：</p>
+      <p>(1) $\overline{BC} : \overline{AC} : \overline{AB} = $ <span class="ans-reveal"><span class="ans-text">1 : \sqrt{3} : 2</span></span></p>
+      <p>(2) 若 $\overline{BC}=4$，$\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">4\sqrt{3}</span></span>，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">8</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AC} = 4\sqrt{3},\; \overline{AB} = 4 \times 2 = 8$</div>
+    </div>
+
+    <!-- 題 5 -->
+    <div class="card">
+      <p><strong>5.</strong> 如圖：</p>
+      <p>(1) $\overline{AB} : \overline{BC} : \overline{AC} = $ <span class="ans-reveal"><span class="ans-text">2 : 1 : \sqrt{3}</span></span></p>
+      <p>(2) 若 $\overline{BC}=6$，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">12</span></span>，$\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">6\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 6 \times 2 = 12,\; \overline{AC} = 6\sqrt{3}$</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 如圖：</p>
+      <p>(1) $\overline{BC} : \overline{AB} : \overline{AC} = $ <span class="ans-reveal"><span class="ans-text">1 : 2 : \sqrt{3}</span></span></p>
+      <p>(2) 若 $\overline{BC}=6$，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">12</span></span>，$\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">6\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 6 \times 2 = 12,\; \overline{AC} = 6\sqrt{3}$</div>
+    </div>
+
+    <!-- 題 6 -->
+    <div class="card">
+      <p><strong>6.</strong> 如圖：</p>
+      <p>(1) $\overline{AB} : \overline{AC} : \overline{BC} = $ <span class="ans-reveal"><span class="ans-text">2 : \sqrt{3} : 1</span></span></p>
+      <p>(2) 若 $\overline{BC}=8$，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">16</span></span>，$\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">8\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 8 \times 2 = 16,\; \overline{AC} = 8\sqrt{3}$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 7 (P.55) ========== -->
+<div class="page" id="page-7">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">55</div>
+  </div>
+  
+  <div class="example-banner">
+    <span class="example-badge">例題 ❸</span>
+    <span class="example-title">$30^\circ - 60^\circ - 90^\circ$ 的直角三角形的邊長比</span>
+  </div>
+
+  <div class="box-note">
+    <p>已知：$\angle A=30^\circ,\; \angle B=60^\circ,\; \angle C=90^\circ$（邊長比為 $1 : \sqrt{3} : 2$）</p>
+    <div style="display:flex; gap:15px; margin-top:8px;">
+      <!-- 例 1 -->
+      <div style="flex:1; background:#fff; border:1px solid #cbd5e0; border-radius:6px; padding:6px 10px;">
+        <strong>(1)</strong> 若 $\overline{BC}=2$，<br>
+        求 $\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">4</span></span>，<br>
+        $\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">2\sqrt{3}</span></span>
+      </div>
+      <!-- 例 2 -->
+      <div style="flex:1; background:#fff; border:1px solid #cbd5e0; border-radius:6px; padding:6px 10px;">
+        <strong>(2)</strong> 若 $\overline{AB}=10$，<br>
+        求 $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">5</span></span>，<br>
+        $\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">5\sqrt{3}</span></span>
+      </div>
+      <!-- 例 3 -->
+      <div style="flex:1; background:#fff; border:1px solid #cbd5e0; border-radius:6px; padding:6px 10px;">
+        <strong>(3)</strong> 若 $\overline{AC}=6$，<br>
+        求 $\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">2\sqrt{3}</span></span>，<br>
+        $\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">4\sqrt{3}</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❻</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 若 $\overline{BC}=3$，求：</p>
+      <p>$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">6</span></span>，$\overline{AC} = $ <span class="ans-reveal"><span class="ans-text">3\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{AB} = 3 \times 2 = 6,\; \overline{AC} = 3\sqrt{3}$</div>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 若 $\overline{AC}=3$，求：</p>
+      <p>$\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">\sqrt{3}</span></span>，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">2\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = \frac{3}{\sqrt{3}} = \sqrt{3},\; \overline{AB} = 2\sqrt{3}$</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 若 $\overline{AC}=4\sqrt{3}$，求：</p>
+      <p>$\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">4</span></span>，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">8</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = \frac{4\sqrt{3}}{\sqrt{3}} = 4,\; \overline{AB} = 4 \times 2 = 8$</div>
+    </div>
+
+    <!-- 題 5 -->
+    <div class="card">
+      <p><strong>5.</strong> 若 $\overline{AC}=9$，求：</p>
+      <p>$\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">3\sqrt{3}</span></span>，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">6\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = \frac{9}{\sqrt{3}} = 3\sqrt{3},\; \overline{AB} = 6\sqrt{3}$</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 若 $\overline{AC}=6\sqrt{3}$，求：</p>
+      <p>$\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">6</span></span>，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">12</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = \frac{6\sqrt{3}}{\sqrt{3}} = 6,\; \overline{AB} = 6 \times 2 = 12$</div>
+    </div>
+
+    <!-- 題 6 -->
+    <div class="card">
+      <p><strong>6.</strong> 若 $\overline{AC}=12$，求：</p>
+      <p>$\overline{BC} = $ <span class="ans-reveal"><span class="ans-text">4\sqrt{3}</span></span>，$\overline{AB} = $ <span class="ans-reveal"><span class="ans-text">8\sqrt{3}</span></span></p>
+      <div class="scratch-pad">計算：$\overline{BC} = \frac{12}{\sqrt{3}} = 4\sqrt{3},\; \overline{AB} = 8\sqrt{3}$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 8 (P.56) ========== -->
+<div class="page" id="page-8">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">56</div>
+  </div>
+  
+  <div class="concept-banner">
+    <span class="concept-badge">概念 ❹</span>
+    <span class="concept-title">直角 $\triangle$ 的邊長比值（銳角三角比）</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>☆ 如果我們把直角 $\triangle ABC$ 放大成 $\triangle DEF$，則：</p>
+        <p style="margin:4px 0;">
+          $\frac{\overline{BC}}{\overline{EF}} = \frac{\overline{AB}}{\overline{DE}}$（對應邊成比例）
+          $\implies \frac{\overline{BC}}{\overline{AB}} = $ <span class="ans-reveal"><span class="ans-text">\frac{\overline{EF}}{\overline{DE}}</span></span>，
+          $\frac{\overline{AC}}{\overline{AB}} = $ <span class="ans-reveal"><span class="ans-text">\frac{\overline{DF}}{\overline{DE}}</span></span>，
+          $\frac{\overline{BC}}{\overline{AC}} = $ <span class="ans-reveal"><span class="ans-text">\frac{\overline{EF}}{\overline{DF}}</span></span>
+        </p>
+        <div style="background:#e6fffa; border-left:4px solid #319795; padding:6px 10px; margin:6px 0;">
+          <strong>我們發現：</strong>不管放大或縮小幾倍，這些直角 $\triangle$ 的<strong>邊長比值都是固定的！</strong>
+        </div>
+        <div style="background:#fff; border:1px solid #cbd5e0; border-radius:6px; padding:6px 10px; line-height:1.9;">
+          $\sin A = \frac{\angle A \text{ 的對邊長}}{\angle A \text{ 的斜邊長}} = \frac{\overline{BC}}{\overline{AB}}$，
+          $\cos A = \frac{\angle A \text{ 的鄰邊長}}{\angle A \text{ 的斜邊長}} = \frac{\overline{AC}}{\overline{AB}}$，
+          $\tan A = \frac{\angle A \text{ 的對邊長}}{\angle A \text{ 的鄰邊長}} = \frac{\overline{BC}}{\overline{AC}}$
+        </div>
+      </div>
+      <div style="width:200px; text-align:center;">
+        <!-- SVG: 斜邊、對邊、鄰邊定位 -->
+        <svg width="200" height="125" viewBox="0 0 200 125">
+          <polygon points="30,95 170,95 170,25" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2"/>
+          <rect x="162" y="87" width="8" height="8" fill="none" stroke="#2b6cb0" stroke-width="1"/>
+          <text x="15" y="100" font-size="12" font-weight="bold">A</text>
+          <text x="175" y="100" font-size="12" font-weight="bold">C</text>
+          <text x="175" y="22" font-size="12" font-weight="bold">B</text>
+          <text x="80" y="50" font-size="11" fill="#c53030" font-weight="bold">斜邊</text>
+          <text x="85" y="112" font-size="11" fill="#2b6cb0" font-weight="bold">鄰邊</text>
+          <text x="175" y="65" font-size="11" fill="#d69e2e" font-weight="bold">對邊</text>
+        </svg>
+        <div class="side-note">☆ 筆記：以觀察角 $\angle A$ 為基準</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❼</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 以 $A$ 為觀察點，請在空格中填入「斜」、「對」、「鄰」：</p>
+      <div style="margin:4px 0; line-height:2;">
+        (1) $\overline{AB}$ 是【<span class="ans-reveal"><span class="ans-text">斜</span></span>】邊；
+            $\overline{BC}$ 是【<span class="ans-reveal"><span class="ans-text">對</span></span>】邊；
+            $\overline{AC}$ 是【<span class="ans-reveal"><span class="ans-text">鄰</span></span>】邊<br>
+        (2) $\sin A = \frac{\angle A \text{ 的【<span class="ans-reveal"><span class="ans-text">對</span></span>】邊長}}{\angle A \text{ 的【<span class="ans-reveal"><span class="ans-text">斜</span></span>】邊長}}$<br>
+        $\cos A = \frac{\angle A \text{ 的【<span class="ans-reveal"><span class="ans-text">鄰</span></span>】邊長}}{\angle A \text{ 的【<span class="ans-reveal"><span class="ans-text">斜</span></span>】邊長}}$<br>
+        $\tan A = \frac{\angle A \text{ 的【<span class="ans-reveal"><span class="ans-text">對</span></span>】邊長}}{\angle A \text{ 的【<span class="ans-reveal"><span class="ans-text">鄰</span></span>】邊長}}$
+      </div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 以 $B$ 為觀察點，請在空格中填入「斜」、「對」、「鄰」：</p>
+      <div style="margin:4px 0; line-height:2;">
+        (1) $\overline{AB}$ 是【<span class="ans-reveal"><span class="ans-text">斜</span></span>】邊；
+            $\overline{AC}$ 是【<span class="ans-reveal"><span class="ans-text">對</span></span>】邊；
+            $\overline{BC}$ 是【<span class="ans-reveal"><span class="ans-text">鄰</span></span>】邊<br>
+        (2) $\sin B = \frac{\angle B \text{ 的【<span class="ans-reveal"><span class="ans-text">對</span></span>】邊長}}{\angle B \text{ 的【<span class="ans-reveal"><span class="ans-text">斜</span></span>】邊長}}$<br>
+        $\cos B = \frac{\angle B \text{ 的【<span class="ans-reveal"><span class="ans-text">鄰</span></span>】邊長}}{\angle B \text{ 的【<span class="ans-reveal"><span class="ans-text">斜</span></span>】邊長}}$<br>
+        $\tan B = \frac{\angle B \text{ 的【<span class="ans-reveal"><span class="ans-text">對</span></span>】邊長}}{\angle B \text{ 的【<span class="ans-reveal"><span class="ans-text">鄰</span></span>】邊長}}$
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 9 (P.57) ========== -->
+<div class="page" id="page-9">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">57</div>
+  </div>
+  
+  <div class="example-banner">
+    <span class="example-badge">例題 ❹</span>
+    <span class="example-title">直角 $\triangle$ 的邊長比值</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>如右圖，已知：$\angle C=90^\circ,\; \overline{BC}=3,\; \overline{AC}=4,\; \overline{AB}=5$，求：</p>
+        <div style="display:flex; gap:20px; margin-top:8px; line-height:2;">
+          <div>(1) $\sin A = $ <span class="ans-reveal"><span class="ans-text">\frac{3}{5}</span></span></div>
+          <div>(2) $\cos A = $ <span class="ans-reveal"><span class="ans-text">\frac{4}{5}</span></span></div>
+          <div>(3) $\tan A = $ <span class="ans-reveal"><span class="ans-text">\frac{3}{4}</span></span></div>
+        </div>
+      </div>
+      <div style="width:200px; text-align:center;">
+        <!-- SVG: 3-4-5 直角三角形 -->
+        <svg width="200" height="105" viewBox="0 0 200 105">
+          <polygon points="40,80 140,80 140,20" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="1.8"/>
+          <rect x="132" y="72" width="8" height="8" fill="none" stroke="#2b6cb0" stroke-width="1"/>
+          <text x="25" y="85" font-size="12" font-weight="bold">A</text>
+          <text x="145" y="85" font-size="12" font-weight="bold">C</text>
+          <text x="145" y="18" font-size="12" font-weight="bold">B</text>
+          <text x="80" y="45" font-size="11" fill="#c53030">5</text>
+          <text x="90" y="96" font-size="11" fill="#2b6cb0">4</text>
+          <text x="148" y="55" font-size="11" fill="#d69e2e">3</text>
+        </svg>
+        <div class="side-note">☆ 筆記：$\sin=\frac{\text{對}}{\text{斜}},\; \cos=\frac{\text{鄰}}{\text{斜}},\; \tan=\frac{\text{對}}{\text{鄰}}$</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❽</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 如圖（邊長 6, 8, 10），求：</p>
+      <p>(1) $\sin A = $ <span class="ans-reveal"><span class="ans-text">\frac{8}{10} = \frac{4}{5}</span></span></p>
+      <p>(2) $\cos A = $ <span class="ans-reveal"><span class="ans-text">\frac{6}{10} = \frac{3}{5}</span></span></p>
+      <p>(3) $\tan A = $ <span class="ans-reveal"><span class="ans-text">\frac{8}{6} = \frac{4}{3}</span></span></p>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 如圖（邊長 8, 15, 17），求（注意觀察角為 $\angle B$）：</p>
+      <p>(1) $\sin B = $ <span class="ans-reveal"><span class="ans-text">\frac{15}{17}</span></span></p>
+      <p>(2) $\cos B = $ <span class="ans-reveal"><span class="ans-text">\frac{8}{17}</span></span></p>
+      <p>(3) $\tan B = $ <span class="ans-reveal"><span class="ans-text">\frac{15}{8}</span></span></p>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 如圖（邊長 10, 24, 26），求：</p>
+      <p>(1) $\sin A = $ <span class="ans-reveal"><span class="ans-text">\frac{24}{26} = \frac{12}{13}</span></span></p>
+      <p>(2) $\cos A = $ <span class="ans-reveal"><span class="ans-text">\frac{10}{26} = \frac{5}{13}</span></span></p>
+      <p>(3) $\tan A = $ <span class="ans-reveal"><span class="ans-text">\frac{24}{10} = \frac{12}{5}</span></span></p>
+    </div>
+
+    <!-- 題 5 -->
+    <div class="card">
+      <p><strong>5.</strong> 若 $\sin B = \frac{12}{13}$，則：</p>
+      <p>(1) $\cos B = $ <span class="ans-reveal"><span class="ans-text">\frac{5}{13}</span></span></p>
+      <p>(2) $\tan B = $ <span class="ans-reveal"><span class="ans-text">\frac{12}{5}</span></span></p>
+      <div class="scratch-pad">計算：斜邊 13，對邊 12 $\implies$ 鄰邊 $\sqrt{13^2-12^2} = 5$</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 如圖（邊長 7, 24, 25），求：</p>
+      <p>(1) $\sin A = $ <span class="ans-reveal"><span class="ans-text">\frac{24}{25}</span></span></p>
+      <p>(2) $\cos A = $ <span class="ans-reveal"><span class="ans-text">\frac{7}{25}</span></span></p>
+      <p>(3) $\tan A = $ <span class="ans-reveal"><span class="ans-text">\frac{24}{7}</span></span></p>
+    </div>
+
+    <!-- 題 6 -->
+    <div class="card">
+      <p><strong>6.</strong> 若 $\sin B = \frac{15}{17}$，則：</p>
+      <p>(1) $\cos B = $ <span class="ans-reveal"><span class="ans-text">\frac{8}{17}</span></span></p>
+      <p>(2) $\tan B = $ <span class="ans-reveal"><span class="ans-text">\frac{15}{8}</span></span></p>
+      <div class="scratch-pad">計算：斜邊 17，對邊 15 $\implies$ 鄰邊 $\sqrt{17^2-15^2} = 8$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 10 (P.58) ========== -->
+<div class="page" id="page-10">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">58</div>
+  </div>
+  
+  <div class="example-banner">
+    <span class="example-badge">例題 ❺</span>
+    <span class="example-title">特殊直角 $\triangle$ 的邊長比值</span>
+  </div>
+
+  <div class="box-note">
+    <div style="background:#fff; border:1.5px solid #2b6cb0; border-radius:8px; padding:10px 14px;">
+      <div style="display:flex; justify-content:space-around; text-align:center; font-weight:bold; margin-bottom:6px;">
+        <div>$\sin A = $ <span class="ans-reveal"><span class="ans-text">\frac{\text{對}}{\text{斜}}</span></span></div>
+        <div>$\cos A = $ <span class="ans-reveal"><span class="ans-text">\frac{\text{鄰}}{\text{斜}}</span></span></div>
+        <div>$\tan A = $ <span class="ans-reveal"><span class="ans-text">\frac{\text{對}}{\text{鄰}}</span></span></div>
+      </div>
+      <hr style="border:none; border-top:1px dashed #cbd5e0; margin:6px 0;">
+      <div style="display:flex; justify-content:space-between; gap:15px; margin-top:6px;">
+        <div style="flex:1; background:#f7fafc; padding:6px 10px; border-radius:6px;">
+          <strong>(1) $45^\circ$ 特殊角：</strong><br>
+          ❶ $\sin 45^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{2}}{2}</span></span><br>
+          ❷ $\cos 45^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{2}}{2}</span></span><br>
+          ❸ $\tan 45^\circ = $ <span class="ans-reveal"><span class="ans-text">1</span></span>
+        </div>
+        <div style="flex:1; background:#f7fafc; padding:6px 10px; border-radius:6px;">
+          <strong>(2) $30^\circ$ 與 $60^\circ$ 特殊角：</strong><br>
+          ❶ $\sin 30^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{1}{2}</span></span>，$\sin 60^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{3}}{2}</span></span><br>
+          ❷ $\cos 30^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{3}}{2}</span></span>，$\cos 60^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{1}{2}</span></span><br>
+          ❸ $\tan 30^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{3}}{3}</span></span>，$\tan 60^\circ = $ <span class="ans-reveal"><span class="ans-text">\sqrt{3}</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❾</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 求解下列三角比：</p>
+      <p>(1) $\sin 30^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{1}{2}</span></span></p>
+      <p>(2) $\sin 60^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{3}}{2}</span></span></p>
+      <p>(3) $\sin 45^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{2}}{2}</span></span></p>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 若 $\sin 30^\circ = \frac{1}{2}$：</p>
+      <p>(1) 表示圖中 $\frac{\text{【}\span class="ans-reveal"><span class="ans-text">b</span></span>\text{】}}{\text{【}\span class="ans-reveal"><span class="ans-text">c</span></span>\text{】}} = \frac{1}{2}$</p>
+      <p>(2) 若 $c=10$，則 $b = $ <span class="ans-reveal"><span class="ans-text">5</span></span></p>
+      <div class="scratch-pad">計算：$\frac{b}{10} = \frac{1}{2} \implies b = 5$</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 求解下列三角比：</p>
+      <p>(1) $\cos 30^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{3}}{2}</span></span></p>
+      <p>(2) $\cos 60^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{1}{2}</span></span></p>
+      <p>(3) $\cos 45^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{2}}{2}</span></span></p>
+    </div>
+
+    <!-- 題 5 -->
+    <div class="card">
+      <p><strong>5.</strong> 若 $\cos 60^\circ = \frac{1}{2}$：</p>
+      <p>(1) 表示圖中 $\frac{\text{【}\span class="ans-reveal"><span class="ans-text">b</span></span>\text{】}}{\text{【}\span class="ans-reveal"><span class="ans-text">c</span></span>\text{】}} = \frac{1}{2}$</p>
+      <p>(2) 若 $c=12$，則 $b = $ <span class="ans-reveal"><span class="ans-text">6</span></span></p>
+      <div class="scratch-pad">計算：$\frac{b}{12} = \frac{1}{2} \implies b = 6$</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card" style="grid-column: span 2;">
+      <p><strong>3.</strong> 求解下列三角比：</p>
+      <div style="display:flex; justify-content:space-around;">
+        <p>(1) $\tan 30^\circ = $ <span class="ans-reveal"><span class="ans-text">\frac{\sqrt{3}}{3}</span></span></p>
+        <p>(2) $\tan 60^\circ = $ <span class="ans-reveal"><span class="ans-text">\sqrt{3}</span></span></p>
+        <p>(3) $\tan 45^\circ = $ <span class="ans-reveal"><span class="ans-text">1</span></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE 11 (P.59) ========== -->
+<div class="page" id="page-11">
+  <canvas class="drawing-canvas"></canvas>
+  <div class="header">
+    <div class="unit-tag">B5 1-4 相似形的應用</div>
+    <div class="page-num">59</div>
+  </div>
+  
+  <div class="example-banner">
+    <span class="example-badge">例題 ❻</span>
+    <span class="example-title">三角比的應用</span>
+  </div>
+
+  <div class="box-note">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div style="flex:1; padding-right:15px;">
+        <p>「無障礙通行空間設置坡道，其坡度不得大於 $\frac{1}{12}$」。其中，<br>
+        $\text{坡度} = \frac{\text{高度}}{\text{水平距離}}$。蘭花國中想設置一個無障礙通行坡道，其中高度 $\overline{BC}$ 為 $30$ 公分，則水平距離至少要多少公分才能符合規定？</p>
+        <div class="step-box">
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❶</span> 依題意列式：$\frac{\text{高度}}{\text{水平距離}} = \frac{30}{\text{水平距離}} \le \frac{1}{12}$
+          </div>
+          <div class="step-line ans-reveal">
+            <span class="step-num">步驟 ❷</span> 交叉相乘：$\text{水平距離} \ge 30 \times 12 = $ <span class="ans-text">360</span>（公分）
+          </div>
+        </div>
+      </div>
+      <div style="width:220px; text-align:center;">
+        <!-- SVG: 無障礙坡道 -->
+        <svg width="220" height="105" viewBox="0 0 220 105">
+          <polygon points="20,80 180,80 180,30" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2"/>
+          <rect x="172" y="72" width="8" height="8" fill="none" stroke="#2b6cb0" stroke-width="1"/>
+          <text x="10" y="85" font-size="11" font-weight="bold">A</text>
+          <text x="185" y="85" font-size="11" font-weight="bold">C</text>
+          <text x="185" y="28" font-size="11" font-weight="bold">B</text>
+          <text x="90" y="50" font-size="11" fill="#2b6cb0" font-weight="bold">坡道</text>
+          <text x="190" y="58" font-size="11" fill="#e53e3e">30cm</text>
+          <text x="95" y="98" font-size="11" fill="#c53030" font-weight="bold">？</text>
+        </svg>
+        <div class="side-note">☆ 筆記：題目中的 $\frac{1}{12}$ 指的是 $\sin A、\cos A$ 還是 $\tan A$？$\implies$ <span class="ans-reveal"><span class="ans-text">\tan A</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-header">
+    <span>🎯 牛刀小試 ❿</span>
+  </div>
+
+  <div class="grid-2">
+    <!-- 題 1 -->
+    <div class="card">
+      <p><strong>1.</strong> 如圖，公車的門可設置臨時殘障坡道，讓身障者的輪椅及娃娃車能輕鬆上車。已知坡度是 $\frac{1}{9}$，且公車門到地板的垂直高度 $\overline{BC}$ 為 $12$ 公分，求此殘障坡道的水平距離 $\overline{AB}$ 是多少公分？</p>
+      <p>答：<span class="ans-reveal"><span class="ans-text">108</span></span> 公分</p>
+      <div class="scratch-pad">計算：$\frac{12}{\overline{AB}} = \frac{1}{9} \implies \overline{AB} = 12 \times 9 = 108$（公分）</div>
+    </div>
+
+    <!-- 題 3 -->
+    <div class="card">
+      <p><strong>3.</strong> 如圖，某公園有一座溜滑梯，其地面所形成的角度為 $A$，已知 $\tan A = \frac{3}{4}$，且最高點的垂直高度為 $180$ 公分，求此溜滑梯的水平距離 $\overline{AC}$ 是多少公分？</p>
+      <p>答：<span class="ans-reveal"><span class="ans-text">240</span></span> 公分</p>
+      <div class="scratch-pad">計算：$\frac{180}{\overline{AC}} = \frac{3}{4} \implies \overline{AC} = 180 \times \frac{4}{3} = 240$（公分）</div>
+    </div>
+
+    <!-- 題 2 -->
+    <div class="card">
+      <p><strong>2.</strong> 如圖，公車的門可設置臨時殘障坡道，讓身障者的輪椅及娃娃車能輕鬆上車。已知坡度是 $\frac{1}{10}$，且公車門到地板的垂直高度 $\overline{BC}$ 為 $12$ 公分，求此殘障坡道的水平距離 $\overline{AB}$ 是多少公分？</p>
+      <p>答：<span class="ans-reveal"><span class="ans-text">120</span></span> 公分</p>
+      <div class="scratch-pad">計算：$\frac{12}{\overline{AB}} = \frac{1}{10} \implies \overline{AB} = 12 \times 10 = 120$（公分）</div>
+    </div>
+
+    <!-- 題 4 -->
+    <div class="card">
+      <p><strong>4.</strong> 如圖，某公園有一座溜滑梯，其地面所形成的角度為 $A$，已知 $\tan A = \frac{3}{4}$，且最高點的垂直高度為 $150$ 公分，求此溜滑梯的水平距離 $\overline{AC}$ 是多少公分？</p>
+      <p>答：<span class="ans-reveal"><span class="ans-text">200</span></span> 公分</p>
+      <div class="scratch-pad">計算：$\frac{150}{\overline{AC}} = \frac{3}{4} \implies \overline{AC} = 150 \times \frac{4}{3} = 200$（公分）</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // TOC Jump
+  document.getElementById('toc-select').addEventListener('change', function() {
+    if (this.value) {
+      const el = document.getElementById(this.value);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Reveal Toggle
+  let allRevealed = false;
+  const toggleBtn = document.getElementById('btn-toggle-ans');
+  toggleBtn.addEventListener('click', () => {
+    allRevealed = !allRevealed;
+    document.querySelectorAll('.ans-reveal').forEach(el => {
+      if (allRevealed) el.classList.add('revealed');
+      else el.classList.remove('revealed');
+    });
+    toggleBtn.textContent = allRevealed ? '🙈' : '👁️';
+  });
+
+  // Individual Reveal
+  document.querySelectorAll('.ans-reveal').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      el.classList.toggle('revealed');
+    });
+  });
+
+  // Print
+  document.getElementById('btn-print').addEventListener('click', () => {
+    window.print();
+  });
+
+  // Drawing Canvas setup
+  let isDrawingMode = false;
+  let penColor = '#e53e3e';
+  let penWidth = 3;
+  const penBtn = document.getElementById('btn-pen');
+  const colorInput = document.getElementById('pen-color');
+  
+  colorInput.addEventListener('change', (e) => {
+    penColor = e.target.value;
+  });
+
+  penBtn.addEventListener('click', () => {
+    isDrawingMode = !isDrawingMode;
+    document.body.classList.toggle('drawing-mode', isDrawingMode);
+    penBtn.classList.toggle('active', isDrawingMode);
+  });
+
+  // Clear Canvas
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    document.querySelectorAll('.drawing-canvas').forEach(canvas => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+  });
+
+  // Canvas Drawing
+  function initCanvases() {
+    document.querySelectorAll('.page').forEach(page => {
+      const canvas = page.querySelector('.drawing-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      function resize() {
+        const rect = page.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      let drawing = false;
+      let lastX = 0;
+      let lastY = 0;
+
+      function startDraw(e) {
+        if (!isDrawingMode) return;
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        lastX = (e.clientX || e.touches[0].clientX) - rect.left;
+        lastY = (e.clientY || e.touches[0].clientY) - rect.top;
+      }
+
+      function draw(e) {
+        if (!drawing || !isDrawingMode) return;
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const curX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+        const curY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = penWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(curX, curY);
+        ctx.stroke();
+
+        lastX = curX;
+        lastY = curY;
+      }
+
+      function stopDraw() {
+        drawing = false;
+      }
+
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDraw);
+      canvas.addEventListener('mouseleave', stopDraw);
+
+      canvas.addEventListener('touchstart', startDraw, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDraw);
+    });
+  }
+
+  window.addEventListener('load', initCanvases);
+
+  // Keyboard Shortcuts
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'a' || e.key === 'A') {
+      toggleBtn.click();
+    } else if (e.key === 'c' || e.key === 'C') {
+      document.getElementById('btn-clear').click();
+    } else if (e.key === 'p' && !e.ctrlKey && !e.metaKey) {
+      penBtn.click();
+    }
+  });
+</script>
+</body>
+</html>
